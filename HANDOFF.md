@@ -89,7 +89,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 
 ### Persistence (localStorage)
 - [x] Saves: mode, player count, imposter count, minutes, all 4 toggles, category, player names, avatars
-- [x] `hasSeenRules` flag — first-time users auto-routed to rules screen
+- [x] Rules screen available from home («كيف نلعبوها») — landing always opens on home
 - [x] "نفس القعدة متاع قبل؟" — returning users prompted to reuse last session's names
 - [x] Custom word packs saved and restored
 
@@ -170,7 +170,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 `home` → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result`
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v3`. When you change any cached file, **bump the cache name** (e.g., `dakheel-v4`) so the SW picks up changes. The activate handler auto-deletes old caches.
+`sw.js` uses cache name `dakheel-v4`. When you change any cached file, **bump the cache name** (e.g., `dakheel-v5`) so the SW picks up changes. The activate handler auto-deletes old caches.
 
 ---
 

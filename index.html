@@ -798,7 +798,6 @@ function resetAll(){
 
 loadState();
 buildModes();paintSetup();
-if(!state.hasSeenRules){go('rules');}
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
 </body>
