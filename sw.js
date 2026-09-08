@@ -1,7 +1,8 @@
-const CACHE_NAME = 'dakheel-v8';
+const CACHE_NAME = 'dakheel-v9';
 const PRECACHE_URLS = [
   'index.html',
   'manifest.json',
+  'auth-sync.js',
   'assets/icons/icon.svg',
   'assets/fonts/Qw3cZQlNHiblL3jPlNFOG-AMCmR8.woff2',
   'assets/fonts/Qw3cZQlNHiblL3jPn9FOG-AMCmR8.woff2',
@@ -34,6 +35,11 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;

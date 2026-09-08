@@ -29,16 +29,32 @@
 
 ```
 الدخيل/
-├── index.html              ← Production PWA (single-file: HTML + CSS + JS inline)
+├── index.html              ← Production PWA (HTML + CSS + JS)
+├── auth-sync.js            ← Client auth + offline sync queue
+├── api/                    ← Vercel serverless (auth + profile)
+│   ├── auth/register.js · login.js · logout.js
+│   ├── profile.js
+│   └── _lib/               ← db, JWT/scrypt, HTTP helpers
+├── package.json            ← @neondatabase/serverless
+├── vercel.json             ← API no-store headers; SW no-cache
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (cache-first, offline support)
+├── sw.js                   ← Service worker (v9; /api never cached)
 ├── assets/
-│   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal 400/500/700/900, Arabic + Latin subsets)
+│   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
-│       └── icon.svg        ← App icon (192x192, "د" in saffron with tea shadow)
+│       └── icon.svg
 ├── dakheel-scope.md        ← Canonical spec (read-only reference)
 └── dakheel-v2.html         ← Original prototype (read-only reference)
 ```
+
+### Guest auth + cloud sync (shipped)
+- [x] **Neon Postgres** via Vercel Marketplace (`dakheel-db`) — env: `DATABASE_URL`, `AUTH_SECRET`, plus Neon `POSTGRES_*`
+- [x] Table `profiles` (email, password_hash, stats jsonb, settings jsonb)
+- [x] API: `POST /api/auth/register|login|logout`, `GET|PUT /api/profile` (JWT Bearer ~30d)
+- [x] Home: primary **إلعب كضيف**, secondary **دخول / تسجيل**, signed-in email chip + **خروج**
+- [x] Sync scores/streaks/settings across devices for signed-in users (not custom packs)
+- [x] Guest path stays fully offline via localStorage; offline sync queue when signed in
+- [x] No Supabase, no Firebase, no Google OAuth in v1
 
 ---
 

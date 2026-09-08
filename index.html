@@ -257,6 +257,18 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--saffron)
 .region{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--surf);border:1px solid var(--line);color:var(--sand);padding:10px 18px;border-radius:999px;font-size:14px;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;white-space:nowrap}
 .toast.on{opacity:1}
+.auth-bar{display:none;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.auth-bar.on{display:flex}
+.auth-chip{flex:1;min-width:0;font-size:13px;color:var(--mute);background:var(--deep);border:1px solid var(--line);border-radius:999px;padding:8px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.auth-out{flex-shrink:0;font-size:14px;color:var(--saffron);padding:8px 10px}
+.auth-sheet{display:none;position:fixed;inset:0;z-index:90;background:rgba(18,16,12,.72);padding:24px 16px;align-items:flex-end;justify-content:center}
+.auth-sheet.on{display:flex}
+.auth-card{width:100%;max-width:540px;background:var(--deep);border:1.5px solid var(--line);border-radius:24px 24px 18px 18px;padding:22px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.auth-card h3{font-family:'Rakkas',serif;font-size:28px;line-height:1.2}
+.auth-tabs{display:flex;gap:8px}
+.auth-tabs .chip{flex:1;text-align:center;cursor:pointer}
+.auth-err{font-size:14px;color:var(--tea);min-height:1.2em}
+.auth-card label{font-size:13px;color:var(--mute)}
 .pack-tools{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .ak-choices{display:flex;gap:10px;width:100%}
 .ak-choices .btn{flex:1}
@@ -270,16 +282,40 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--saffron)
 
 <!-- HOME -->
 <section class="screen on" id="s-home">
+  <div class="auth-bar" id="auth-bar">
+    <div class="auth-chip" id="auth-chip"></div>
+    <button type="button" class="auth-out" id="auth-logout" onclick="authLogout()">خروج</button>
+  </div>
   <div class="hero">
     <div class="mark"><h1>الدخيل</h1><h1 class="sh" aria-hidden="true">الدخيل</h1></div>
     <div class="stamp">هاتف واحد · قعدة وحدة · كذّاب واحد</div>
     <p class="tag">كلكم تعرفوا الكلمة… إلا واحد. لقّوه قبل ما يضحك عليكم ويمشي.</p>
   </div>
   <div class="stack">
-    <button class="btn" onclick="go('mode')">يالله نبداو</button>
+    <button class="btn" onclick="go('mode')">إلعب كضيف</button>
+    <button class="btn ghost" id="auth-open-btn" onclick="openAuthSheet()">دخول / تسجيل</button>
     <button class="btn ghost" onclick="go('rules')">كيف نلعبوها</button>
   </div>
 </section>
+
+<!-- AUTH SHEET -->
+<div class="auth-sheet" id="auth-sheet" onclick="if(event.target===this)closeAuthSheet()">
+  <div class="auth-card" role="dialog" aria-labelledby="auth-title">
+    <h3 id="auth-title">دخول / تسجيل</h3>
+    <p class="sub">سجّل باش تنقل النقاط والسلاسل بين التليفونات. الضيف يلعب أوفلاين عادي.</p>
+    <div class="auth-tabs">
+      <button type="button" class="chip sel" id="auth-tab-login" onclick="setAuthMode('login')">دخول</button>
+      <button type="button" class="chip" id="auth-tab-register" onclick="setAuthMode('register')">تسجيل</button>
+    </div>
+    <label for="auth-email">الإيميل</label>
+    <input id="auth-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" dir="ltr">
+    <label for="auth-pass">كلمة السر</label>
+    <input id="auth-pass" type="password" autocomplete="current-password" placeholder="٦ حروف على الأقل" dir="ltr">
+    <div class="auth-err" id="auth-err"></div>
+    <button type="button" class="btn" id="auth-submit" onclick="submitAuth()">دخول</button>
+    <button type="button" class="btn ghost" onclick="closeAuthSheet()">سكّر</button>
+  </div>
+</div>
 
 <!-- RULES -->
 <section class="screen" id="s-rules">
@@ -537,6 +573,7 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--saffron)
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="auth-sync.js"></script>
 <script>
 /* ===================== CONTENT ===================== */
 const PACKS={
@@ -652,15 +689,36 @@ function impCap(){return Math.max(1,Math.floor((state.players-1)/2));}
 function needImps(){return state.roundImposters||state.imposters||1;}
 
 /* ===================== PERSISTENCE ===================== */
-function saveState(){
- try{localStorage.setItem('dakheel',JSON.stringify({
+function settingsPayload(){
+ return {
   mode:state.mode, players:state.players, imposters:state.imposters,
   minutes:state.minutes, informant:state.informant, blackout:state.blackout,
   showHint:state.showHint, useNames:state.useNames, secretBallot:state.secretBallot,
   emojiClue:state.emojiClue, intensity:state.intensity, region:state.region,
-  names:state.names, avs:state.avs, cat:state.cat
- }))}catch(e){}
+  names:state.names, avs:state.avs, cat:state.cat,
+  updatedAt:Date.now()
+ };
 }
+function saveState(){
+ try{localStorage.setItem('dakheel',JSON.stringify(settingsPayload()))}catch(e){}
+ if(window.DakheelAuth) DakheelAuth.scheduleSync(settingsPayload);
+}
+function applyCloudSettings(s){
+ if(!s||typeof s!=='object')return;
+ ['mode','players','imposters','minutes','informant','blackout','useNames','cat','secretBallot','intensity','emojiClue','region'].forEach(k=>{if(s[k]!=null)state[k]=s[k]});
+ if(s.showHint!=null)state.showHint=s.showHint;
+ if(s.names&&s.names.length)state.names=s.names;
+ if(s.avs&&s.avs.length)state.avs=s.avs;
+ const preset=INTENSITY[state.intensity];
+ if(preset){state.blackoutChance=preset.blackoutChance;state.twistChance=preset.twistChance;}
+ syncSwitches();paintSetup();paintIntensity();paintRegions();buildModes();
+ try{localStorage.setItem('dakheel',JSON.stringify(settingsPayload()))}catch(e){}
+}
+window.applyCloudStats=function(stats){
+ if(!stats)return;
+ state.streak=stats.currentStreak||0;
+ state.score={citizens:stats.citizenWins||0,imposter:stats.imposterWins||0};
+};
 function syncSwitches(){
  [['sw-informant','informant'],['sw-blackout','blackout'],['sw-hint','showHint'],['sw-ballot','secretBallot'],['sw-emoji','emojiClue'],['sw-names','useNames']].forEach(([id,k])=>{
   const el=$(id);if(!el)return;el.classList.toggle('on',!!state[k]);el.setAttribute('aria-checked',state[k]?'true':'false');
@@ -680,6 +738,10 @@ function loadState(){
   else{state.blackoutChance=INTENSITY.adiya.blackoutChance;state.twistChance=INTENSITY.adiya.twistChance;}
   syncSwitches();
  }catch(e){}
+ if(window.DakheelAuth){
+  const st=DakheelAuth.loadLocalStats();
+  applyCloudStats(st);
+ }
 }
 
 function go(s){
@@ -1124,6 +1186,11 @@ function finish(winner){
  v.textContent=cz?'الأهالي ربحوا':(needImps()>1?'الدخلاء ربحوا':'الدخيل ربح');
  v.className='verdict '+(cz?'win':'lose');
  state.streak=(state.streak||0)+1;
+ if(window.DakheelAuth){
+  const st=DakheelAuth.recordRound(winner);
+  state.streak=st.currentStreak||state.streak;
+  DakheelAuth.pushProfile({stats:st,settings:settingsPayload()});
+ }
  const sl=$('streak-line');
  if(sl){
   if(state.streak>=2){sl.style.display='block';sl.textContent=arabStreak(state.streak)+' جولات متتالية';}
@@ -1211,8 +1278,66 @@ function resetAll(){
  go('home');
 }
 
+/* ===================== AUTH UI ===================== */
+let authMode='login';
+function paintAuthBar(){
+ const bar=$('auth-bar'),chip=$('auth-chip'),open=$('auth-open-btn');
+ const signed=window.DakheelAuth&&DakheelAuth.isSignedIn();
+ if(bar)bar.classList.toggle('on',!!signed);
+ if(open)open.style.display=signed?'none':'';
+ if(signed&&chip){
+  const u=DakheelAuth.getUser();
+  chip.textContent=u&&u.email?u.email:'مسجّل';
+ }
+}
+function openAuthSheet(){
+ authMode='login';setAuthMode('login');
+ const err=$('auth-err');if(err)err.textContent='';
+ const sh=$('auth-sheet');if(sh)sh.classList.add('on');
+ const em=$('auth-email');if(em)setTimeout(()=>em.focus(),50);
+}
+function closeAuthSheet(){
+ const sh=$('auth-sheet');if(sh)sh.classList.remove('on');
+}
+function setAuthMode(m){
+ authMode=m;
+ const login=$('auth-tab-login'),reg=$('auth-tab-register'),btn=$('auth-submit'),title=$('auth-title');
+ if(login)login.classList.toggle('sel',m==='login');
+ if(reg)reg.classList.toggle('sel',m==='register');
+ if(btn)btn.textContent=m==='login'?'دخول':'سجّل حساب';
+ if(title)title.textContent=m==='login'?'دخول':'تسجيل';
+ const pass=$('auth-pass');if(pass)pass.autocomplete=m==='login'?'current-password':'new-password';
+}
+async function submitAuth(){
+ const err=$('auth-err');if(err)err.textContent='';
+ if(!window.DakheelAuth){if(err)err.textContent='التسجيل مش جاهز';return;}
+ if(!navigator.onLine){if(err)err.textContent='ما في نت — إلعب كضيف عادي';return;}
+ const email=($('auth-email').value||'').trim();
+ const password=$('auth-pass').value||'';
+ const btn=$('auth-submit');if(btn)btn.disabled=true;
+ try{
+  if(authMode==='register') await DakheelAuth.register(email,password,settingsPayload);
+  else await DakheelAuth.login(email,password,settingsPayload,applyCloudSettings);
+  closeAuthSheet();paintAuthBar();
+  toast(authMode==='register'?'اتسجّل الحساب':'أهلا بيك');
+ }catch(e){
+  if(err)err.textContent=(e&&e.message)||'ما قدرناش نكمّل';
+ }finally{
+  if(btn)btn.disabled=false;
+ }
+}
+async function authLogout(){
+ if(window.DakheelAuth) await DakheelAuth.logout();
+ paintAuthBar();
+ toast('خرجت — تقدر تلعب كضيف');
+}
+
 loadState();
 buildModes();paintSetup();paintIntensity();paintRegions();syncSwitches();
+paintAuthBar();
+if(window.DakheelAuth){
+ DakheelAuth.refresh(applyCloudSettings).then(()=>paintAuthBar()).catch(()=>{});
+}
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
 </body>
