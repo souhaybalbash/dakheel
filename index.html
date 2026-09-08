@@ -203,6 +203,10 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--saffron)
 .pass-name{font-family:'Rakkas',serif;font-size:44px;color:var(--saffron);line-height:1.2}
 .card{width:100%;border-radius:26px;padding:36px 24px;text-align:center;background:var(--deep);border:1.5px solid var(--line)}
 .card .cat{font-size:14px;color:var(--mute);margin-bottom:12px}
+.card .cat.tip{
+  font-family:'Rakkas',serif;font-size:clamp(26px,7vw,34px);font-weight:400;
+  color:var(--saffron);line-height:1.35;margin-bottom:16px;letter-spacing:.01em;
+}
 .word{font-family:'Rakkas',serif;font-size:46px;line-height:1.25}
 .card.bad{background:#2B1218;border-color:var(--tea)}
 .card.bad .word{color:var(--tea)}
@@ -456,7 +460,7 @@ const PACKS={
  annoy:{n:"حاجات تعصّب",w:[{t:"قطع الكهرباء",h:"ظلام فجأة",r:"all"},{t:"طابور البنزين",h:"انتظار وقود",r:"all"},{t:"الشبكة ضعيفة",h:"اتصال بطيء",r:"all"},{t:"الزحمة",h:"مرور خانق",r:"all"},{t:"المطبّات",h:"هزة طريق",r:"all"},{t:"سعر الدولار",h:"صرف غالي",r:"all"},{t:"حفرة الشارع",h:"حفرة أسفلت",r:"all"},{t:"قاطع الطابور",h:"يتعدّى دور",r:"all"},{t:"العرس المتأخر",h:"حفل يتأخر",r:"all"},{t:"عياط تلفون",h:"صوت عالي",r:"all"},{t:"الركنة القدّام",h:"ركنة غلط",r:"all"},{t:"النت ينقطع",h:"انترنت يطيح",r:"all"},{t:"الشاي البارد",h:"كأس فاتر",r:"all"},{t:"الصرّاف فاضي",h:"ماكينة فاضية",r:"all"},{t:"واتساب معلق",h:"رسالة تعلق",r:"all"},{t:"رد متأخر",h:"رد بطيء",r:"all"},{t:"سواق أعمى",h:"سواقة ظلام",r:"all"},{t:"ضغط الماء",h:"مياه ضعيفة",r:"all"}]},
  work:{n:"مهن وشغل",w:[{t:"طبيب",h:"علاج مرض",r:"all"},{t:"مهندس",h:"تصميم بناء",r:"all"},{t:"معلّم",h:"درس مدرسة",r:"all"},{t:"سواق تاكسي",h:"أجرة مشوار",r:"all"},{t:"خبّاز",h:"عجن فرن",r:"all"},{t:"جزّار",h:"تقطيع لحم",r:"all"},{t:"حدّاد",h:"حديد نار",r:"all"},{t:"نجّار",h:"خشب منشار",r:"all"},{t:"صيّاد",h:"صيد بحر",r:"all"},{t:"فلاح",h:"زرع أرض",r:"all"},{t:"حلاق",h:"مقص شعر",r:"all"},{t:"خيّاط",h:"خياطة قماش",r:"all"},{t:"صيدلي",h:"دواء علبة",r:"all"},{t:"صنايعي",h:"تصليح شغل",r:"all"},{t:"كوافير",h:"تصفيف شعر",r:"all"},{t:"بائع خضار",h:"بيع خضار",r:"all"},{t:"عامل نفط",h:"حقل نفط",r:"all"},{t:"ممرّض",h:"رعاية مريض",r:"all"},{t:"إمام مسجد",h:"صلاة جماعة",r:"all"},{t:"سبّاك",h:"مواسير ماء",r:"all"},{t:"قهوجي",h:"تحضير قهوة",r:"all"},{t:"خضّار",h:"بيع خضار",r:"all"},{t:"مكيّفاتي",h:"تصليح تبريد",r:"all"},{t:"لحّام",h:"لحام معدن",r:"all"}]},
  nature:{n:"طبيعة وجو",w:[{t:"قبلي",h:"ريح جنوب",r:"south"},{t:"غبار",h:"هواء تراب",r:"all"},{t:"البحر",h:"مياه مالحة",r:"all"},{t:"الصحراء",h:"رمل واسع",r:"south"},{t:"النخلة",h:"شجرة تمر",r:"all"},{t:"الزيتون",h:"شجرة زيت",r:"all"},{t:"التين",h:"فاكهة صيف",r:"all"},{t:"الرمّان",h:"فاكهة حبوب",r:"all"},{t:"الجمل",h:"دابة صحراء",r:"south"},{t:"الغزال",h:"حيوان سريع",r:"all"},{t:"المطر",h:"ماء سماء",r:"all"},{t:"الشتاء",h:"برد موسم",r:"all"},{t:"الصيف",h:"حر موسم",r:"all"},{t:"الواحة",h:"نخيل ماء",r:"south"},{t:"الكثبان",h:"تلال رمل",r:"south"},{t:"الجبل",h:"مرتفع صخر",r:"all"},{t:"الوادي",h:"منخفض أرض",r:"all"},{t:"الشمس",h:"ضوء نهار",r:"all"},{t:"الرمل",h:"حبيبات أرض",r:"all"},{t:"الملح",h:"مذاق مالح",r:"all"},{t:"النعناع",h:"ورق عطر",r:"all"},{t:"الفجر",h:"أول صبح",r:"all"}]},
- mix:{n:"مشكّل",w:[]},
+ mix:{n:"مشكّل عشوائي",w:[]},
  custom:{n:"فئة خاصة",w:[]}
 };
 PACKS.mix.w=Object.keys(PACKS).filter(k=>k!=="mix"&&k!=="custom").flatMap(k=>PACKS[k].w);
@@ -588,7 +592,8 @@ function saveNames(){
 }
 function buildCats(){
  const b=$('cat-chips');b.innerHTML='';
- Object.keys(PACKS).forEach(k=>{
+ const order=['mix',...Object.keys(PACKS).filter(k=>k!=='mix'&&k!=='custom'),'custom'];
+ order.forEach(k=>{
   const el=document.createElement('button');
   el.className='chip'+(state.cat===k?' sel':'');el.textContent=PACKS[k].n;
   el.onclick=()=>{state.cat=k;buildCats();saveState();};b.appendChild(el);
@@ -646,24 +651,27 @@ function paintPass(){
 }
 function showWord(){
  const i=state.idx,imp=state.roles[i]==='imposter',c=$('reveal-card');
+ const catEl=$('reveal-cat');
  c.className='card';
+ catEl.className='cat';
  if(imp&&state.mode==='shabiha'){
-  $('reveal-cat').textContent=PACKS[state.cat].n;
+  catEl.textContent=PACKS[state.cat].n;
   $('reveal-word').textContent=state.decoy;
   $('reveal-hint').textContent='كلمة وحدة تدل عليها.';
  }else if(imp){
   c.className='card bad';
-  $('reveal-cat').textContent=(state.showHint&&state.wordHint)?('تلميح: '+state.wordHint):'بلا تلميح';
+  catEl.className='cat tip';
+  catEl.textContent=(state.showHint&&state.wordHint)?('تلميح: '+state.wordHint):'بلا تلميح';
   $('reveal-word').textContent='أنت الدخيل';
   $('reveal-hint').textContent='اسمع، قلّد، ولا تبان.';
  }else if(i===state.informantIdx){
   c.className='card role';
   const target=state.roles.findIndex(r=>r==='imposter');
-  $('reveal-cat').textContent=PACKS[state.cat].n+' · أنت المخبر';
+  catEl.textContent=PACKS[state.cat].n+' · أنت المخبر';
   $('reveal-word').textContent=state.word;
   $('reveal-hint').textContent='الدخيل: '+state.names[target]+' — لا تفضحه من أول لفّة وإلا بيعرفوا إنك المخبر.';
  }else{
-  $('reveal-cat').textContent=PACKS[state.cat].n;
+  catEl.textContent=PACKS[state.cat].n;
   $('reveal-word').textContent=state.word;
   $('reveal-hint').textContent='كلمة وحدة تدل عليها، من غير ما تفضحها.';
  }

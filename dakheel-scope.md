@@ -113,7 +113,7 @@ Never store round state. A killed app starts a fresh round.
 
 ## 7. Content
 
-Ten built-in packs plus مشكّل (all packs merged) and فئة خاصة (user-entered, minimum 3 words). Canonical v1 lists live in `index.html` (production PWA). Pack keys and names:
+Ten built-in packs plus مشكّل عشوائي (all packs merged, shown first in the category list) and فئة خاصة (user-entered, minimum 3 words). Canonical v1 lists live in `index.html` (production PWA). Pack keys and names:
 
 | key | name | count |
 |---|---|---|
