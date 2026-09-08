@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>الدخيل — قعدة ليبية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rakkas&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12100C;
+  --deep:#1B1811;
+  --surf:#262117;
+  --line:#3A3223;
+  --sand:#F4EBD7;
+  --mute:#A2947A;
+  --saffron:#F2B134;
+  --tea:#C4602A;
+  --mint:#79B95C;
+  --plum:#7A3B4E;
+  --r:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{height:100%}
+body{
+  background:var(--ink);color:var(--sand);
+  font-family:'Tajawal',-apple-system,'Segoe UI',system-ui,sans-serif;
+  font-size:17px;line-height:1.6;overscroll-behavior:none;
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(242,177,52,.055) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 0% 0%, rgba(242,177,52,.035) 0 2px, transparent 2.5px);
+  background-size:34px 34px, 34px 34px;
+}
+#app{max-width:540px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:20px 18px 30px}
+.screen{display:none;flex-direction:column;flex:1}
+.screen.on{display:flex}
+h1,h2,.disp{font-family:'Rakkas',serif;font-weight:400}
+h2{font-size:32px;line-height:1.25}
+p.sub{color:var(--mute);font-size:15px}
+.quip{color:var(--saffron);font-size:15px;font-style:italic}
+
+/* ---------- home ---------- */
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:16px 0}
+.mark{position:relative;display:inline-block;padding:0 6px}
+.mark h1{font-size:clamp(70px,24vw,116px);line-height:.92;color:var(--sand)}
+.mark .sh{position:absolute;inset:0;color:var(--tea);transform:translate(-8px,6px);z-index:-1;opacity:.75}
+.stamp{
+  display:inline-block;margin-top:20px;padding:7px 16px;border:2px solid var(--saffron);
+  border-radius:999px;color:var(--saffron);font-size:14px;transform:rotate(-2.5deg);
+}
+.tag{color:var(--mute);font-size:16px;margin-top:20px;max-width:24ch}
+
+/* ---------- buttons ---------- */
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;color:inherit;background:none}
+.btn{display:block;width:100%;padding:17px 20px;border-radius:var(--r);background:var(--saffron);color:#191307;font-weight:900;font-size:19px;transition:transform .1s,filter .1s}
+.btn:active{transform:scale(.975);filter:brightness(.93)}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--sand);font-weight:500;font-size:17px}
+.btn.mint{background:var(--mint);color:#0C1A06}
+.btn.tea{background:var(--tea);color:#fff}
+.btn.quiet{background:var(--surf);color:var(--sand)}
+.btn:disabled{opacity:.35;pointer-events:none}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:22px}
+.back{color:var(--mute);font-size:15px;padding:8px 0;width:max-content}
+
+/* ---------- lists / cards ---------- */
+.mode{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:right;background:var(--deep);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.mode.sel{border-color:var(--saffron);background:var(--surf)}
+.mode .ic{font-size:28px;line-height:1.2}
+.mode .t{font-family:'Rakkas',serif;font-size:23px}
+.mode .d{font-size:14px;color:var(--mute);line-height:1.55}
+.block{margin-top:20px}
+.label{font-size:14px;color:var(--mute);margin-bottom:8px}
+.stepper{display:flex;align-items:center;justify-content:space-between;background:var(--deep);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px}
+.stepper b{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+.step-btn{width:44px;height:44px;border-radius:13px;background:var(--surf);font-size:24px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 15px;border-radius:999px;background:var(--deep);border:1.5px solid var(--line);font-size:15px;color:var(--mute)}
+.chip.sel{background:var(--saffron);border-color:var(--saffron);color:#191307;font-weight:700}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .d{font-size:13px;color:var(--mute)}
+.sw{width:54px;height:31px;border-radius:999px;background:var(--surf);position:relative;flex-shrink:0;transition:background .18s}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:25px;height:25px;border-radius:50%;background:var(--mute);transition:transform .18s,background .18s}
+.sw.on{background:var(--mint)}
+.sw.on::after{transform:translateX(-23px);background:#0C1A06}
+textarea,input{width:100%;background:var(--deep);border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;color:var(--sand);font-family:inherit;font-size:16px;-webkit-user-select:text;user-select:text}
+textarea{min-height:110px;resize:vertical;line-height:1.7}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+.names{display:flex;flex-direction:column;gap:9px}
+.name-row{display:flex;align-items:center;gap:10px}
+.name-row .av{width:44px;height:44px;flex-shrink:0;display:grid;place-items:center;background:var(--surf);border-radius:13px;font-size:21px}
+
+/* ---------- pass / reveal ---------- */
+.center{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dot.done{background:var(--mint)}
+.dot.now{background:var(--saffron);transform:scale(1.4)}
+.big-av{font-size:56px}
+.pass-name{font-family:'Rakkas',serif;font-size:44px;color:var(--saffron);line-height:1.2}
+.hold{
+  width:100%;border-radius:26px;padding:40px 24px;text-align:center;
+  background:var(--deep);border:2px dashed var(--line);color:var(--mute);
+}
+.hold.live{border-style:solid;border-color:var(--saffron);background:var(--surf)}
+.card{width:100%;border-radius:26px;padding:36px 24px;text-align:center;background:var(--deep);border:1.5px solid var(--line)}
+.card .cat{font-size:14px;color:var(--mute);margin-bottom:12px}
+.word{font-family:'Rakkas',serif;font-size:46px;line-height:1.25}
+.card.bad{background:#2B1218;border-color:var(--tea)}
+.card.bad .word{color:var(--tea)}
+.card.role{background:#171F26;border-color:#3E5768}
+.card .hint{font-size:15px;color:var(--mute);margin-top:14px}
+.counter{font-size:14px;color:var(--mute)}
+
+/* ---------- discuss ---------- */
+.clock{font-family:'Rakkas',serif;font-size:78px;font-variant-numeric:tabular-nums;line-height:1}
+.clock.low{color:var(--tea)}
+.panel{background:var(--deep);border:1px solid var(--line);border-radius:var(--r);padding:15px;text-align:center;width:100%}
+.panel b{color:var(--saffron)}
+.twist{border-color:var(--saffron);background:#2A2211}
+#blackout{position:fixed;inset:0;background:#000;z-index:99;display:none;flex-direction:column;justify-content:center;align-items:center;gap:10px;text-align:center;padding:30px}
+#blackout.on{display:flex}
+#blackout .disp{font-size:40px;color:var(--saffron)}
+#blackout p{color:#6b6250;font-size:15px}
+
+/* ---------- vote ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.pl{padding:14px 8px;border-radius:16px;background:var(--deep);border:1.5px solid var(--line);font-size:16px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.pl .e{font-size:26px}
+.pl.sel{background:var(--tea);border-color:var(--tea);color:#fff;font-weight:700}
+
+/* ---------- result ---------- */
+.verdict{font-family:'Rakkas',serif;font-size:42px;line-height:1.2}
+.verdict.win{color:var(--mint)} .verdict.lose{color:var(--tea)}
+.roast{color:var(--saffron);font-size:16px;max-width:28ch}
+.board{width:100%;display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.br{display:flex;align-items:center;gap:10px;background:var(--deep);border:1px solid var(--line);border-radius:14px;padding:11px 14px;font-size:16px}
+.br.bad{border-color:var(--tea)}
+.br .e{font-size:20px}
+.br .n{flex:1;text-align:right}
+.br .tagx{font-size:13px;color:var(--mute)}
+.br .pts{font-family:'Rakkas',serif;font-size:20px;color:var(--saffron);min-width:26px;text-align:left}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HOME -->
+<section class="screen on" id="s-home">
+  <div class="hero">
+    <div class="mark"><h1>الدخيل</h1><h1 class="sh" aria-hidden="true">الدخيل</h1></div>
+    <div class="stamp">هاتف واحد · قعدة وحدة · كذّاب واحد</div>
+    <p class="tag">كلكم تعرفوا الكلمة… إلا واحد. لقّوه قبل ما يضحك عليكم ويمشي.</p>
+  </div>
+  <div class="stack">
+    <button class="btn" onclick="go('mode')">يالله نبداو</button>
+    <button class="btn ghost" onclick="go('rules')">كيف نلعبوها</button>
+  </div>
+</section>
+
+<!-- RULES -->
+<section class="screen" id="s-rules">
+  <button class="back" onclick="go('home')">‹ رجوع</button>
+  <h2>القوانين</h2>
+  <div class="block" style="display:flex;flex-direction:column;gap:15px">
+    <p>الهاتف يدور واحد واحد. كل واحد يضغط ويشوف كلمته لوحده — ويرفع صبعه تختفي.</p>
+    <p>واحد فيكم <b style="color:var(--tea)">دخيل</b>. حسب الطور، إما ما عندهش كلمة أصلاً، وإلا عنده كلمة غالطة وهو نفسه ما يدري.</p>
+    <p>بعدين لفّة كلام: كل واحد <b style="color:var(--saffron)">كلمة وحدة</b>. تفصح هلبا، الدخيل يفهم. تغمّض هلبا، يشكّوا فيك. اللعبة كلها في النص هذا.</p>
+    <p>وفي الآخر تصوّتوا. صابوه؟ الأهالي ربحوا. غلطوا؟ الدخيل ياخذ نقطتين ويقعد يضحك.</p>
+    <p class="quip">نصيحة: أخطر واحد مش اللي ساكت — اللي يتكلم واثق زايد.</p>
+  </div>
+  <div class="stack"><button class="btn" onclick="go('mode')">فهمت</button></div>
+</section>
+
+<!-- MODE -->
+<section class="screen" id="s-mode">
+  <button class="back" onclick="go('home')">‹ رجوع</button>
+  <h2>اختار الطور</h2>
+  <p class="sub">كل طور يقلب القعدة على وجه ثاني.</p>
+  <div class="block" id="mode-list"></div>
+  <div class="stack"><button class="btn" onclick="go('setup')">التالي</button></div>
+</section>
+
+<!-- SETUP -->
+<section class="screen" id="s-setup">
+  <button class="back" onclick="go('mode')">‹ رجوع</button>
+  <h2>الإعدادات</h2>
+  <div class="block">
+    <div class="label">عدد اللاعبين</div>
+    <div class="stepper"><button class="step-btn" onclick="bump('players',-1)">−</button><b id="v-players">5</b><button class="step-btn" onclick="bump('players',1)">+</button></div>
+  </div>
+  <div class="block">
+    <div class="label">عدد الدخلاء</div>
+    <div class="stepper"><button class="step-btn" onclick="bump('imposters',-1)">−</button><b id="v-imposters">1</b><button class="step-btn" onclick="bump('imposters',1)">+</button></div>
+  </div>
+  <div class="block">
+    <div class="label">دقائق النقاش</div>
+    <div class="stepper"><button class="step-btn" onclick="bump('minutes',-1)">−</button><b id="v-minutes">3</b><button class="step-btn" onclick="bump('minutes',1)">+</button></div>
+  </div>
+  <div class="block">
+    <div class="row"><div><div>دور المخبر</div><div class="d">لاعب واحد يعرف مين الدخيل — بس ما يقدرش يقولها على طول</div></div><div class="sw" id="sw-informant" onclick="toggle('informant',this)"></div></div>
+    <div class="row"><div><div>مقلب المولّد</div><div class="d">الكهرباء تقطع فجأة وسط النقاش</div></div><div class="sw on" id="sw-blackout" onclick="toggle('blackout',this)"></div></div>
+    <div class="row"><div><div>الدخيل يعرف الفئة</div><div class="d">يشوف اسم الفئة بس، من غير الكلمة</div></div><div class="sw on" id="sw-hint" onclick="toggle('hintCat',this)"></div></div>
+    <div class="row"><div><div>أسماء اللاعبين</div><div class="d">بدل «اللاعب ١»</div></div><div class="sw" id="sw-names" onclick="toggle('useNames',this)"></div></div>
+  </div>
+  <div class="stack"><button class="btn" onclick="afterSetup()">التالي</button></div>
+</section>
+
+<!-- NAMES -->
+<section class="screen" id="s-names">
+  <button class="back" onclick="go('setup')">‹ رجوع</button>
+  <h2>مين قاعد معانا</h2>
+  <p class="sub">اضغط على الرمز باش تبدّله.</p>
+  <div class="block names" id="name-inputs"></div>
+  <div class="stack"><button class="btn" onclick="saveNames()">التالي</button></div>
+</section>
+
+<!-- CATEGORY -->
+<section class="screen" id="s-cat">
+  <button class="back" onclick="go(state.useNames?'names':'setup')">‹ رجوع</button>
+  <h2>الفئة</h2>
+  <p class="sub">كلها من عندنا — من البازين للمولّد.</p>
+  <div class="block chips" id="cat-chips"></div>
+  <div class="block" id="custom-box" style="display:none">
+    <div class="label">كلماتك — كل وحدة في سطر</div>
+    <textarea id="custom-words" placeholder="بازين&#10;سوق المشير&#10;عمّي في العرس"></textarea>
+  </div>
+  <div class="stack"><button class="btn" onclick="deal()">وزّع</button></div>
+</section>
+
+<!-- DEAL -->
+<section class="screen" id="s-deal">
+  <div class="center">
+    <div class="disp" style="font-size:44px" id="deal-title">نخلطوا الأوراق</div>
+    <p class="quip" id="deal-quip"></p>
+  </div>
+</section>
+
+<!-- PASS -->
+<section class="screen" id="s-pass">
+  <div class="center">
+    <div class="dots" id="pass-dots"></div>
+    <div class="counter" id="pass-count"></div>
+    <div class="big-av" id="pass-av"></div>
+    <div class="pass-name" id="pass-name"></div>
+    <p class="sub">ناول الهاتف له وحده. الباقي يغمّضوا.</p>
+  </div>
+  <div class="stack">
+    <div class="hold" id="hold-pad">اضغط بصبعك وثبّت<br><span style="font-size:14px">ترفع، تختفي</span></div>
+  </div>
+</section>
+
+<!-- REVEAL -->
+<section class="screen" id="s-reveal">
+  <div class="center">
+    <div class="card" id="reveal-card">
+      <div class="cat" id="reveal-cat"></div>
+      <div class="word" id="reveal-word"></div>
+      <div class="hint" id="reveal-hint"></div>
+    </div>
+    <p class="sub" style="font-size:14px">ارفع صبعك تختفي</p>
+  </div>
+  <div class="stack"><div style="height:1px"></div></div>
+</section>
+
+<!-- TWIST -->
+<section class="screen" id="s-twist">
+  <div class="center">
+    <div class="counter">قبلي هبّت</div>
+    <div class="disp" style="font-size:34px;line-height:1.35" id="twist-text"></div>
+  </div>
+  <div class="stack"><button class="btn" onclick="beginDiscussion()">مقبولة</button></div>
+</section>
+
+<!-- DISCUSS -->
+<section class="screen" id="s-discuss">
+  <div class="center">
+    <div class="panel">يبدأ الكلام: <b id="starter"></b></div>
+    <div class="clock" id="clock">03:00</div>
+    <div class="panel twist" id="twist-band" style="display:none"></div>
+    <p class="sub" id="discuss-quip"></p>
+  </div>
+  <div class="stack">
+    <button class="btn ghost" id="btn-timer" onclick="toggleTimer()">وقّف</button>
+    <button class="btn" onclick="go('vote')">نصوّتوا</button>
+  </div>
+</section>
+
+<!-- VOTE -->
+<section class="screen" id="s-vote">
+  <h2>مين الدخيل</h2>
+  <p class="sub" id="vote-sub"></p>
+  <div class="grid" id="vote-grid"></div>
+  <div class="stack"><button class="btn" id="btn-accuse" onclick="afterVote()" disabled>اكشفوه</button></div>
+</section>
+
+<!-- COURT -->
+<section class="screen" id="s-court">
+  <div class="center">
+    <div class="counter">المحكمة انعقدت</div>
+    <div class="pass-name" id="court-name"></div>
+    <p class="sub">عنده ٤٥ ثانية يدافع على روحه. ممنوع يقاطعوه.</p>
+    <div class="clock" id="court-clock">00:45</div>
+  </div>
+  <div class="stack">
+    <button class="btn tea" onclick="judge()">مذنب — اكشفوه</button>
+    <button class="btn ghost" onclick="reVote()">قنّعنا — نعيدوا التصويت</button>
+  </div>
+</section>
+
+<!-- GUESS -->
+<section class="screen" id="s-guess">
+  <div class="center">
+    <div class="disp" style="font-size:38px" id="guess-title">انكشف</div>
+    <p class="sub">عنده فرصة وحدة يخمّن الكلمة ويقلبها عليكم. خلّوه يقولها بصوت عالي قبل ما تضغطوا.</p>
+    <div class="card"><div class="cat">الكلمة كانت</div><div class="word" id="guess-word"></div></div>
+  </div>
+  <div class="stack">
+    <button class="btn mint" onclick="finish('citizens')">غلط — الأهالي ربحوا</button>
+    <button class="btn tea" onclick="finish('imposter')">صابها — قلبها علينا</button>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section class="screen" id="s-result">
+  <div class="center">
+    <div class="verdict" id="verdict"></div>
+    <p class="roast" id="roast"></p>
+    <div class="card"><div class="cat" id="result-cat">الكلمة كانت</div><div class="word" id="result-word"></div></div>
+    <div class="board" id="board"></div>
+  </div>
+  <div class="stack">
+    <button class="btn" onclick="deal()">جولة ثانية</button>
+    <button class="btn ghost" onclick="go('cat')">بدّل الفئة</button>
+    <button class="btn ghost" onclick="go('mode')">بدّل الطور</button>
+    <button class="btn ghost" onclick="resetAll()">من الأول</button>
+  </div>
+</section>
+
+</div>
+
+<div id="blackout">
+  <div class="disp">الكهرباء قطعت</div>
+  <p>كملوا في الضلمة… ولا تلمسوا الهاتف</p>
+  <div class="clock" id="bo-clock" style="font-size:44px"></div>
+</div>
+
+<script>
+/* ===================== CONTENT ===================== */
+const PACKS={
+ food:{n:"أكل ليبي",w:["بازين","كسكسي","شربة ليبية","مبطّن","عصيدة","بريك","مبكبكة","رشدة","فتّات","سفنز","مقروض","غريبة","زميطة","هريسة","بسيسة","طاجين","دولمة","مرقاز","شكشوكة","حوت مقلي","بطبوط","خبز التنور","لبن رائب","دقلة نور","شاي بالفول","قهوة عربي","ملوخية","عصيدة بالرب"]},
+ cities:{n:"مدن ومناطق",w:["طرابلس","بنغازي","مصراتة","سبها","الزاوية","البيضاء","درنة","طبرق","سرت","زليتن","الخمس","غريان","ككلة","نالوت","يفرن","غدامس","أوباري","مرزق","الكفرة","شحات","سوسة","ودان","أجدابيا","صبراتة","ترهونة","بني وليد","الجفرة","مسلاتة","تاجوراء","الجبل الأخضر"]},
+ places:{n:"معالم وأماكن",w:["السرايا الحمراء","سوق المشير","ميدان الشهداء","قوس ماركوس","المدينة القديمة","لبدة الكبرى","صبراتة الأثرية","قورينا","أكاكوس","وادي الحياة","بحيرة قبر عون","جبل نفوسة","رأس الهلال","وادي الكوف","كورنيش بنغازي","برج الساعة","جزيرة فروة","شارع عمر المختار","سوق الجريد","مطار معيتيقة","الشط","سوق الثلاثاء"]},
+ slang:{n:"لهجة وكلام",w:["هلبا","شن هذا","وين","كيفاش","باهي","مليح","يزّي","توّة","عبالي","قدّاش","دبش","عيّط لي","حبابك","سلّملي","ماشي الحال","خش","برّه","زيد","يا خوي","صاحبي","مبروك عليك","قعدة","نجّم","شوية","بالعقل","تلحلح","دوّر عليه","شنّي"]},
+ customs:{n:"عادات ومناسبات",w:["عرس ليبي","الجرد","الزفة","الحناء","الفاتحة","خطوبة","عزومة","رمضان","الفطور","شربة رمضان","الترويحة","المسحراتي","عيد الفطر","عيد الأضحى","الأضحية","المولد","طهور","تعزية","قعدة الشاي","زردة","سوق الجمعة","العصيدة في المولد"]},
+ sport:{n:"رياضة وأندية",w:["الأهلي طرابلس","الاتحاد","الأهلي بنغازي","النصر","الهلال","السويحلي","أبو سليم","الأخضر","دارنس","المدينة","خليج سرت","التحدي","الأولمبي","أساريا","منتخب ليبيا","الديربي","ملعب طرابلس","الدوري الليبي","حكم المباراة","الجماهير","الحارس","الطرد"]},
+ home:{n:"البيت والسوق",w:["مولّد الكهرباء","براد الشاي","كانون الفحم","الكسكاس","صينية الشاي","المكيّف","الثلاجة","خزان الماء","تنكة بنزين","بطاقة شحن","الفرشة","الطبّاخ","المروحة","الشمعة","سوق الخضرة","الميكروباص","التاكسي","محطة الوقود","البقّالة","الحلاق","المخبزة","الجزّار"]},
+ annoy:{n:"حاجات تعصّب",w:["قطع الكهرباء","طابور البنزين","الشبكة ضعيفة","الزحمة","المطبّات","سعر الدولار","الحفرة في الشارع","اللي يقطع الطابور","العرس اللي يبدأ متأخر","الكلام في التلفون بصوت عالي","الجار اللي يركن قدّامك","النت ينقطع","الشاي البارد","الصرّاف فاضي","الواتساب ما يوصلش","الرد بعد يومين","السواق اللي ما يضوّيش","ضغط الماء"]},
+ work:{n:"مهن وشغل",w:["طبيب","مهندس","معلّم","سواق تاكسي","خبّاز","جزّار","حدّاد","نجّار","صيّاد","فلاح","شرطي","إطفائي","حلاق","خيّاط","صيدلي","محاسب","مبرمج","بائع خضار","عامل نفط","ممرّض","إمام مسجد","صحفي","مصوّر","سبّاك"]},
+ nature:{n:"طبيعة وجو",w:["قبلي","غبار","البحر","الصحراء","النخلة","الزيتون","التين","الرمّان","الجمل","الغزال","المطر","الشتاء","الصيف","الواحة","الكثبان","الجبل","الوادي","الشمس","الرمل","الملح","النعناع","الفجر"]},
+ mix:{n:"مشكّل",w:[]},
+ custom:{n:"فئة خاصة",w:[]}
+};
+PACKS.mix.w=Object.keys(PACKS).filter(k=>k!=="mix"&&k!=="custom").flatMap(k=>PACKS[k].w);
+
+const MODES=[
+ {id:"classic",ic:"🫖",t:"كلاسيكي",d:"الدخيل يعرف روحه، وما عندهش كلمة. سهل تتعلّمه، صعب تفوز فيه."},
+ {id:"shabiha",ic:"🎭",t:"الشبيهة",d:"الدخيل ياخذ كلمة غالطة قريبة — وهو نفسه ما يدري إنه دخيل. أخبث طور."},
+ {id:"qibli",ic:"🏜️",t:"قبلي",d:"نفس اللعبة، بس كل جولة تجيك قاعدة مجنونة تقلب النقاش."},
+ {id:"court",ic:"⚖️",t:"المحكمة",d:"بعد التصويت، المتهم ياخذ ٤٥ ثانية دفاع — وتقدروا تغيّروا رأيكم."}
+];
+
+const QUIPS=["اللي يقول «أنا ما فهمتش السؤال» أول واحد يتشك فيه.","خمس دقايق وتتخاصموا. عادي.","حضّروا الشاي، اللعبة تطوّل.","ممنوع تبصّ في الهاتف متاع جارك.","اللي يضحك بلا سبب، شكّوا فيه.","الصمت مش دليل براءة… بس هلبا مريب.","اللي يقول كلمة عامة هلبا، هو هو.","تذكّروا: الدخيل قاعد يقرا وجوهكم من الأول."];
+const ROAST_C=["صابوه. يشرب شايه ويسكت.","انكشف من أول لفّة تقريبًا.","تمثيل ضعيف، انتهت المسرحية.","حتى المخبر ما احتاجوه."];
+const ROAST_I=["ضحك عليكم وراح يشرب شاي.","قعد وسطكم لفّة كاملة وما حسّيتوش.","تصويت ممتاز… على واحد بريء.","كنتوا واثقين، وكنتوا غالطين."];
+const TWISTS=[
+ {t:"الكلام بكلمة وحدة بس — اللي يزيد كلمة، يتشك فيه"},
+ {t:"ممنوع تقول اسم أي لاعب طول النقاش"},
+ {t:"كل واحد لازم يضحّك واحد قبل ما يقول كلمته"},
+ {t:"لفّة سكوت: أول لفّة بالإشارات بس، بلا كلام"},
+ {t:"ممنوع تعيد كلمة قالها اللي قبلك"},
+ {t:"الأصغر سنًا يبدأ، والأكبر يختم"},
+ {t:"الكهرباء ضعيفة — الوقت انقسم على اثنين",half:true},
+ {t:"ممنوع تقول «ما نعرفش» — اللي يقولها يخسر دوره"},
+ {t:"كل واحد يتكلم وهو واقف. بجد."},
+ {t:"لازم كلمتك تبدا بنفس حرف كلمة اللي قبلك"}
+];
+const AVATARS=["🫖","🐪","🌴","⚽","🔥","🌊","🧿","🎭","🚕","🍵","🧭","⭐","🥁","🌙","🫒","🐟","🏺","🪔"];
+
+/* ===================== STATE ===================== */
+const state={
+ mode:"classic",players:5,imposters:1,minutes:3,
+ informant:false,blackout:true,hintCat:true,useNames:false,
+ names:[],avs:[],cat:"food",
+ roles:[],word:"",decoy:"",idx:0,votes:[],accused:null,
+ pts:[],score:{citizens:0,imposter:0},
+ timeLeft:0,ticking:false,tid:null,courtTid:null,boTid:null,boDone:false
+};
+const $=id=>document.getElementById(id);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
+
+function go(s){
+ if(s==='vote')buildVote();
+ document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
+ $('s-'+s).classList.add('on');window.scrollTo(0,0);
+}
+
+/* ===================== SETUP ===================== */
+function buildModes(){
+ const b=$('mode-list');b.innerHTML='';
+ MODES.forEach(m=>{
+  const el=document.createElement('button');
+  el.className='mode'+(state.mode===m.id?' sel':'');
+  el.innerHTML='<div class="ic">'+m.ic+'</div><div><div class="t">'+m.t+'</div><div class="d">'+m.d+'</div></div>';
+  el.onclick=()=>{state.mode=m.id;buildModes();};
+  b.appendChild(el);
+ });
+}
+const LIM={players:[3,14],imposters:[1,3],minutes:[1,10]};
+function bump(k,d){
+ const[lo,hi]=LIM[k];state[k]=Math.min(hi,Math.max(lo,state[k]+d));
+ const cap=Math.max(1,Math.floor((state.players-1)/2));
+ state.imposters=Math.min(state.imposters,cap);
+ paintSetup();
+}
+function paintSetup(){$('v-players').textContent=state.players;$('v-imposters').textContent=state.imposters;$('v-minutes').textContent=state.minutes;}
+function toggle(k,el){state[k]=!state[k];el.classList.toggle('on',state[k]);}
+
+function afterSetup(){
+ if(state.avs.length!==state.players){
+  const pool=[...AVATARS].sort(()=>Math.random()-.5);
+  state.avs=Array.from({length:state.players},(_,i)=>pool[i%pool.length]);
+ }
+ if(state.useNames){buildNames();go('names');}
+ else{state.names=Array.from({length:state.players},(_,i)=>'اللاعب '+(i+1));buildCats();go('cat');}
+}
+function buildNames(){
+ const b=$('name-inputs');b.innerHTML='';
+ for(let i=0;i<state.players;i++){
+  const row=document.createElement('div');row.className='name-row';
+  const av=document.createElement('button');av.className='av';av.textContent=state.avs[i];
+  av.onclick=()=>{state.avs[i]=pick(AVATARS);av.textContent=state.avs[i];};
+  const inp=document.createElement('input');inp.type='text';inp.maxLength=14;inp.placeholder='اللاعب '+(i+1);
+  inp.value=(state.names[i]&&!/^اللاعب /.test(state.names[i]))?state.names[i]:'';
+  row.appendChild(av);row.appendChild(inp);b.appendChild(row);
+ }
+}
+function saveNames(){
+ const ins=$('name-inputs').querySelectorAll('input');
+ state.names=Array.from(ins).map((el,i)=>el.value.trim()||('اللاعب '+(i+1)));
+ buildCats();go('cat');
+}
+function buildCats(){
+ const b=$('cat-chips');b.innerHTML='';
+ Object.keys(PACKS).forEach(k=>{
+  const el=document.createElement('button');
+  el.className='chip'+(state.cat===k?' sel':'');el.textContent=PACKS[k].n;
+  el.onclick=()=>{state.cat=k;buildCats();};b.appendChild(el);
+ });
+ $('custom-box').style.display=state.cat==='custom'?'block':'none';
+}
+
+/* ===================== ROUND ===================== */
+function deal(){
+ let pool=PACKS[state.cat].w;
+ if(state.cat==='custom'){
+  pool=$('custom-words').value.split(/[\n,،]/).map(s=>s.trim()).filter(Boolean);
+  if(pool.length<3){alert('اكتب ٣ كلمات على الأقل.');go('cat');return;}
+ }
+ state.word=pick(pool);
+ do{state.decoy=pick(pool);}while(state.decoy===state.word&&pool.length>1);
+ if(state.pts.length!==state.players)state.pts=Array(state.players).fill(0);
+
+ const order=Array.from({length:state.players},(_,i)=>i).sort(()=>Math.random()-.5);
+ const imps=order.slice(0,state.imposters);
+ state.roles=Array.from({length:state.players},(_,i)=>imps.includes(i)?'imposter':'citizen');
+ state.informantIdx=-1;
+ if(state.informant){
+  const cits=order.filter(i=>!imps.includes(i));
+  if(cits.length)state.informantIdx=cits[0];
+ }
+ state.twist=state.mode==='qibli'?pick(TWISTS):null;
+ state.idx=0;state.votes=[];state.accused=null;state.boDone=false;
+
+ $('deal-quip').textContent=pick(QUIPS);
+ go('deal');
+ setTimeout(()=>{paintPass();go('pass');},1100);
+}
+function paintPass(){
+ $('pass-count').textContent=(state.idx+1)+' من '+state.players;
+ $('pass-name').textContent=state.names[state.idx];
+ $('pass-av').textContent=state.avs[state.idx];
+ const d=$('pass-dots');d.innerHTML='';
+ for(let i=0;i<state.players;i++){
+  const s=document.createElement('div');
+  s.className='dot'+(i<state.idx?' done':i===state.idx?' now':'');
+  d.appendChild(s);
+ }
+}
+function showWord(){
+ const i=state.idx,imp=state.roles[i]==='imposter',c=$('reveal-card');
+ c.className='card';
+ if(imp&&state.mode==='shabiha'){
+  $('reveal-cat').textContent=PACKS[state.cat].n;
+  $('reveal-word').textContent=state.decoy;
+  $('reveal-hint').textContent='كلمة وحدة تدل عليها.';
+ }else if(imp){
+  c.className='card bad';
+  $('reveal-cat').textContent=state.hintCat?'الفئة: '+PACKS[state.cat].n:'بلا فئة، بلا شيء';
+  $('reveal-word').textContent='أنت الدخيل';
+  $('reveal-hint').textContent='اسمع، قلّد، ولا تبان.';
+ }else if(i===state.informantIdx){
+  c.className='card role';
+  const target=state.roles.findIndex(r=>r==='imposter');
+  $('reveal-cat').textContent=PACKS[state.cat].n+' · أنت المخبر';
+  $('reveal-word').textContent=state.word;
+  $('reveal-hint').textContent='الدخيل: '+state.names[target]+' — لا تفضحه من أول لفّة وإلا بيعرفوا إنك المخبر.';
+ }else{
+  $('reveal-cat').textContent=PACKS[state.cat].n;
+  $('reveal-word').textContent=state.word;
+  $('reveal-hint').textContent='كلمة وحدة تدل عليها، من غير ما تفضحها.';
+ }
+ buzz(18);go('reveal');
+}
+function hideWord(){
+ if(!$('s-reveal').classList.contains('on'))return;
+ state.idx++;
+ if(state.idx<state.players){paintPass();go('pass');}
+ else if(state.twist){$('twist-text').textContent=state.twist.t;go('twist');}
+ else beginDiscussion();
+}
+/* hold-to-reveal */
+(function(){
+ const pad=$('hold-pad');
+ const down=e=>{e.preventDefault();pad.classList.add('live');showWord();};
+ const up=()=>{pad.classList.remove('live');hideWord();};
+ pad.addEventListener('pointerdown',down);
+ ['pointerup','pointercancel','pointerleave'].forEach(ev=>document.addEventListener(ev,up));
+})();
+
+/* ===================== DISCUSSION ===================== */
+function beginDiscussion(){
+ $('starter').textContent=state.names[Math.floor(Math.random()*state.players)];
+ $('discuss-quip').textContent=pick(QUIPS);
+ const band=$('twist-band');
+ if(state.twist){band.style.display='block';band.textContent=state.twist.t;}
+ else band.style.display='none';
+ let secs=state.minutes*60;
+ if(state.twist&&state.twist.half)secs=Math.round(secs/2);
+ state.timeLeft=secs;paintClock();startTimer();go('discuss');
+}
+function paintClock(){
+ const m=String(Math.floor(state.timeLeft/60)).padStart(2,'0');
+ const s=String(state.timeLeft%60).padStart(2,'0');
+ const c=$('clock');c.textContent=m+':'+s;c.classList.toggle('low',state.timeLeft<=30);
+}
+function startTimer(){
+ clearInterval(state.tid);state.ticking=true;$('btn-timer').textContent='وقّف';
+ state.tid=setInterval(()=>{
+  if(state.timeLeft<=0){clearInterval(state.tid);state.ticking=false;$('btn-timer').textContent='خلص الوقت';buzz([80,60,80]);return;}
+  state.timeLeft--;paintClock();
+  if(state.blackout&&!state.boDone&&state.timeLeft<state.minutes*30&&Math.random()<0.02){cutPower();}
+ },1000);
+}
+function toggleTimer(){
+ if(state.ticking){clearInterval(state.tid);state.ticking=false;$('btn-timer').textContent='كمّل';}
+ else if(state.timeLeft>0)startTimer();
+}
+function cutPower(){
+ state.boDone=true;buzz([40,80,40]);
+ let n=6;const bo=$('blackout');$('bo-clock').textContent=n;bo.classList.add('on');
+ clearInterval(state.boTid);
+ state.boTid=setInterval(()=>{
+  n--;$('bo-clock').textContent=n>0?n:'جات';
+  if(n<=-1){clearInterval(state.boTid);bo.classList.remove('on');}
+ },1000);
+}
+
+/* ===================== VOTE ===================== */
+function buildVote(){
+ $('vote-sub').textContent=state.imposters===1?'اختاروا واحد، بالإجماع.':'اختاروا '+state.imposters+' لاعبين.';
+ const g=$('vote-grid');g.innerHTML='';
+ state.names.forEach((n,i)=>{
+  const b=document.createElement('button');
+  b.className='pl'+(state.votes.includes(i)?' sel':'');
+  b.innerHTML='<div class="e">'+state.avs[i]+'</div><div>'+n+'</div>';
+  b.onclick=()=>{
+   const at=state.votes.indexOf(i);
+   if(at>-1)state.votes.splice(at,1);
+   else{if(state.votes.length>=state.imposters)state.votes.shift();state.votes.push(i);}
+   buildVote();
+  };
+  g.appendChild(b);
+ });
+ $('btn-accuse').disabled=state.votes.length!==state.imposters;
+}
+function afterVote(){
+ clearInterval(state.tid);state.ticking=false;
+ if(state.mode==='court'){
+  $('court-name').textContent=state.votes.map(i=>state.names[i]).join(' و ');
+  let t=45;$('court-clock').textContent='00:45';
+  clearInterval(state.courtTid);
+  state.courtTid=setInterval(()=>{
+   t--;$('court-clock').textContent='00:'+String(Math.max(t,0)).padStart(2,'0');
+   if(t<=0){clearInterval(state.courtTid);buzz(120);}
+  },1000);
+  go('court');
+ }else judge();
+}
+function reVote(){clearInterval(state.courtTid);state.votes=[];go('vote');}
+function judge(){
+ clearInterval(state.courtTid);
+ const caught=state.votes.every(i=>state.roles[i]==='imposter');
+ if(caught&&state.mode!=='shabiha'){
+  $('guess-title').textContent=state.imposters===1?'انكشف':'انكشفوا';
+  $('guess-word').textContent=state.word;go('guess');
+ }else finish(caught?'citizens':'imposter');
+}
+function finish(winner){
+ state.score[winner]++;
+ state.roles.forEach((r,i)=>{
+  if(winner==='citizens'&&r==='citizen')state.pts[i]+=1;
+  if(winner==='imposter'&&r==='imposter')state.pts[i]+=2;
+ });
+ const cz=winner==='citizens',v=$('verdict');
+ v.textContent=cz?'الأهالي ربحوا':'الدخيل ربح';
+ v.className='verdict '+(cz?'win':'lose');
+ $('roast').textContent=cz?pick(ROAST_C):pick(ROAST_I);
+ $('result-word').textContent=state.word;
+ const b=$('board');b.innerHTML='';
+ state.names.map((n,i)=>({n,i})).sort((a,z)=>state.pts[z.i]-state.pts[a.i]).forEach(({n,i})=>{
+  const imp=state.roles[i]==='imposter';
+  const d=document.createElement('div');d.className='br'+(imp?' bad':'');
+  d.innerHTML='<span class="e">'+state.avs[i]+'</span><span class="n">'+n+'</span>'+
+   '<span class="tagx">'+(imp?'دخيل':(i===state.informantIdx?'مخبر':'أهلي'))+'</span>'+
+   '<span class="pts">'+state.pts[i]+'</span>';
+  b.appendChild(d);
+ });
+ buzz(cz?[40,60,40]:150);go('result');
+}
+function resetAll(){
+ clearInterval(state.tid);clearInterval(state.courtTid);clearInterval(state.boTid);
+ state.score={citizens:0,imposter:0};state.pts=[];state.names=[];state.avs=[];state.votes=[];
+ go('home');
+}
+
+buildModes();paintSetup();
+</script>
+</body>
+</html>
