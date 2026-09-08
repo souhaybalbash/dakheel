@@ -19,7 +19,7 @@
 
 | File | Purpose |
 |------|---------|
-| `dakheel-scope.md` | **The canonical spec.** Full game rules, modes, content rules, design system, acceptance criteria, and originally planned Flutter architecture. Read this first for any feature work. |
+| `dakheel-scope.md` | **The canonical spec.** Full game rules, modes, content rules, design system, acceptance criteria. Platform target is PWA (+ TWA later). |
 | `dakheel-v2.html` | **The original prototype.** Single-file HTML with all game logic, used as the interaction spec. Preserved as reference — do not edit. |
 | `index.html` | **The production PWA.** Enhanced version of the prototype. This is the live codebase. |
 
@@ -114,15 +114,20 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 ## What has NOT been done yet
 
 ### Deployment (next immediate step)
-- [ ] **Deploy to Vercel or Netlify** — the web version needs a short shareable URL for WhatsApp distribution
+- [x] **Deploy to Vercel** — https://dakheel-nu.vercel.app · repo https://github.com/souhaybalbash/dakheel
 - [ ] **Generate raster PNG icons** — 192x192 and 512x512 from the SVG, add to manifest for wider Android compatibility
 - [ ] **TWA or Capacitor wrapper** — to produce a signed APK for the Play Store
 - [ ] **Play Store listing** — Arabic-first store copy, screenshots, icon
 
 ### Content gaps
-- [ ] **Regional content sign-off** — places pack rebalanced toward Benghazi/south (best-effort); still need native review from Benghazi and Fezzan/south before shipping (blocking for v1 per scope §7)
-- [ ] **Region tags on words** — add a `region` field (`tripoli`/`benghazi`/`south`/`all`) to each word in the packs. Not used in v1 UI but enables a "لهجة المنطقة" filter in v2
+- [ ] **Regional content sign-off** — blocking for store. Checklist below.
+- [x] **Region tags on words** — each pack entry is `{t, h, r}` with `r` in `tripoli`/`benghazi`/`south`/`all`. v1 UI ignores `r`.
 - [ ] **More quips/roasts** — currently 18 each, which clears the 15+ minimum. More variety = better replay. Each line must be Libyan dialect, funny, relatable.
+
+### Regional review checklist (before store)
+1. Send current packs (or a screenshare of مشكّل rounds) to **one Benghazi** reviewer and **one Fezzan/south** reviewer.
+2. Ask them to mark: wrong for their region, missing must-haves, unsafe/sectarian.
+3. Apply fixes; leave `r` tags accurate; only then clear the sign-off checkbox.
 
 ### Features deferred to v2+ (from scope §4, §11, §14)
 - [ ] More packs: مدرسة وجامعة, طفولة وتسعينات, أفلام وبرامج
@@ -148,7 +153,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 - No build step, no bundler, no framework
 
 ### Key JS globals
-- `PACKS` — object of word packs, keyed by id. Each has `.n` (display name) and `.w` (array of `{t, h}` word+hint). `mix` auto-merges all packs. `custom` is user-entered plain strings.
+- `PACKS` — object of word packs, keyed by id. Each has `.n` (display name) and `.w` (array of `{t, h, r}` = word, ≤2-word hint, region). `mix` auto-merges all packs. `custom` is user-entered plain strings.
 - `MODES` — array of 4 mode objects: `{id, ic, t, d}` (id, icon emoji, title, description)
 - `QUIPS`, `ROAST_C`, `ROAST_I` — string arrays for flavor text
 - `TWISTS` — array of `{t, half?}` twist card objects (قبلي mode)
@@ -156,7 +161,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 
 ### Key JS functions
 - `go(screenId)` — navigates between screens (hides all, shows target)
-- `deal()` — starts a round: picks unused word/decoy, assigns roles, resets court reopen
+- `deal()` — starts a round: picks unused word/decoy, assigns roles, resets court reopen; informant (if on) learns **one** imposter name (first assigned)
 - `showWord()` / `hideWord()` — open-then-next card display
 - `beginDiscussion()` — starts timer (`discussTotal`), picks starter, shows twist band
 - `buildVote()` — renders vote grid with selection logic
@@ -170,7 +175,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 `home` → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result`
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v4`. When you change any cached file, **bump the cache name** (e.g., `dakheel-v5`) so the SW picks up changes. The activate handler auto-deletes old caches.
+`sw.js` uses cache name `dakheel-v5`. When you change any cached file, **bump the cache name** (e.g., `dakheel-v6`) so the SW picks up changes. The activate handler auto-deletes old caches.
 
 ---
 
@@ -198,7 +203,7 @@ Then:
 2. Play a full round — home → mode → setup → category → deal → pass (**افتح**) → reveal (**اللاعب الجاي**) → discuss → vote → guess (no word on screen) → result
 3. Court mode: reopen vote once, confirm second reopen is blocked
 4. Reload the page — settings and names should persist
-5. Check DevTools → Application → Service Workers — should show `sw.js` registered (`dakheel-v3`)
+5. Check DevTools → Application → Service Workers — should show `sw.js` registered (`dakheel-v5`)
 6. Go offline (DevTools → Network → Offline) — the game should still work fully
 
 ---

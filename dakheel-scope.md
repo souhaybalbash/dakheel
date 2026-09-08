@@ -26,17 +26,16 @@ Reference prototype: `dakheel-v2.html` (working single-file HTML). Treat it as t
 
 ## 2. Platform and stack
 
-**Flutter**, single codebase, three targets:
-- **Android** — primary. Ship first.
-- **Web** (Flutter web, deployed to Vercel or Netlify) — ship at the same time. In Libya a WhatsApp link spreads faster than a store listing, and the game needs zero install to spread. This is the growth channel.
-- **iOS** — later, same code.
+**PWA first** (single `index.html` + service worker), three distribution targets:
+- **Web** — primary growth channel. Deploy to Vercel/Netlify; WhatsApp link, zero install. Ships first.
+- **Android** — wrap the PWA as TWA / Capacitor for Play Store (later).
+- **iOS** — same PWA in Safari; App Store wrapper later if needed.
 
 **Rules**
-- No backend, no network calls. The app must work with the phone in airplane mode from first launch.
-- Bundle all fonts locally in `assets/fonts/`. Do not load Google Fonts over the network — many users have no data.
-- State management: keep it small. `flutter_riverpod` or plain `ChangeNotifier` — do not pull in a heavy architecture for a game with one screen stack.
-- Persistence: `shared_preferences` only, for the small things listed in §6.
-- Minimum Android SDK 23. Portrait only, no landscape.
+- No backend, no network calls required to play. The app must work with the phone in airplane mode after first load (service worker + local fonts).
+- Bundle all fonts locally in `assets/fonts/`. Do not load Google Fonts over the network.
+- Persistence: `localStorage` only, for the small things listed in §6.
+- Portrait-first UI. Keep the screen stack small — no heavy SPA framework required for v1.
 
 ---
 
@@ -92,7 +91,7 @@ Model twists as `{ id, text, effect? }` so more can be added without touching lo
 
 ## 5. Toggles
 
-- **دور المخبر** (default off) — one citizen additionally sees the name of one imposter. Card is styled differently (blue-grey). Copy warns him not to be obvious, since exposing himself early tells the room he's the informant. Only assign if at least one citizen exists.
+- **دور المخبر** (default off) — one citizen additionally sees the name of **one** imposter (the first assigned when there are several). Card is styled differently (blue-grey). Copy warns him not to be obvious, since exposing himself early tells the room he's the informant. Only assign if at least one citizen exists.
 - **مقلب المولّد** (default on) — once per round, during the second half of the discussion timer, the screen cuts to full black: «الكهرباء قطعت — كملوا في الضلمة»، six-second countdown, then «جات». The discussion timer keeps running underneath. Fires at most once per round. On Android, a short vibration pattern accompanies it.
 - **تلميح للدخيل** (default on) — classic/qibli/court only. Shows a max-two-word Libyan clue that nudges toward the secret word (never the word itself, never the category name alone). Off → «بلا تلميح». Ignored in الشبيهة. Custom packs have no hints.
 - **أسماء اللاعبين** (default off) — when off, players are «اللاعب ١…ن». When on, a name entry screen with a tappable emoji avatar per player.
@@ -105,7 +104,8 @@ Store only:
 - Last used mode, player count, imposter count, minutes, all four toggles.
 - Player names and avatars from the last session (offer to reuse: "نفس القعدة متاع قبل؟").
 - Custom word packs the user created.
-- `hasSeenRules` flag.
+
+Landing is always **home**; rules are opened only via «كيف نلعبوها». Do not auto-route first visits to rules.
 
 Never store round state. A killed app starts a fresh round.
 
@@ -131,7 +131,7 @@ Ten built-in packs plus مشكّل (all packs merged) and فئة خاصة (user-
 **Content rules**
 - Keep packs in JSON, not in Dart source. Adding words must not require a rebuild of logic.
 - Words should be nameable in one clue word. Cut anything that can't be.
-- **Regional balance is a known gap.** The current lists lean Tripolitanian. Before v1 ships, get sign-off from at least one person from Benghazi and one from the south/Fezzan, and add a `region` tag field to each word (`tripoli` / `benghazi` / `south` / `all`) even if v1 ignores it — a "لهجة المنطقة" filter is the obvious v2 feature.
+- **Regional balance is a known gap.** Word entries carry a `r` region tag (`tripoli` / `benghazi` / `south` / `all`). v1 UI ignores the tag. Before store listing, get sign-off from at least one person from Benghazi and one from the south/Fezzan. A "لهجة المنطقة" filter is the obvious v2 feature.
 - Avoid: real private individuals, politics, anything sectarian or tribal, anything that names a living political figure. Public institutions, football clubs, cities, food, and shared frustrations are the safe and funny zone.
 - Do not put religious terms in a mocking frame. عيد, رمضان, المولد are fine as words; jokes about them are not.
 
@@ -247,7 +247,7 @@ Modes classic + shabiha, all ten packs, full round loop, open-then-next reveal, 
 قبلي twists, المحكمة defense phase, informant role, blackout prank, quips and roasts, avatars and names, persistence.
 
 **Phase 3 — ship**
-Flutter web build deployed with a short shareable URL, Play Store listing (Arabic-first store copy and screenshots), icon and splash, custom pack creation and reuse.
+PWA on a short shareable URL (Vercel), Play Store via TWA/Capacitor later, Arabic-first store copy and screenshots, icon and splash, custom pack creation and reuse.
 
 **Phase 4 — after feedback**
 Regional word tagging and filter, more packs (مدرسة وجامعة, طفولة وتسعينات, أفلام وبرامج), a "أكثر أو أقل" second game mode in the same shell, share-a-pack via a copyable code string.
