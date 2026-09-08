@@ -57,7 +57,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 ## What has been done (v1 PWA — Phase 1+2 complete)
 
 ### Game logic (all from prototype, fully working)
-- [x] All 4 game modes: كلاسيكي (classic), الشبيهة (shabiha), قبلي (qibli), المحكمة (court)
+- [x] All core modes + Layer 3: كلاسيكي، الشبيهة، قبلي، المحكمة، **أسئلة**، **فوضى الدخلاء**
 - [x] Full round flow: deal → pass → افتح/reveal → twist → discuss → vote → court → guess → result
 - [x] 3–14 players, 1–3 imposters with hard cap at `max(1, floor((players-1)/2))`
 - [x] Open-then-next reveal (**افتح** → card → **اللاعب الجاي** / **يلا نبدوا**)
@@ -73,12 +73,15 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 - [x] Libyan dialect UI pass (منو، تشوف، تفضح، الجاي, Western digits)
 
 ### Content (all Libyan dialect)
-- [x] 10 word packs: أكل ليبي (28), مدن ومناطق (30), معالم وأماكن (22), لهجة وكلام (28), عادات ومناسبات (22), رياضة وأندية (22), البيت والسوق (22), حاجات تعصّب (18), مهن وشغل (24), طبيعة وجو (22)
+- [x] 14 word packs: أكل ليبي (28), مدن ومناطق (30), معالم وأماكن (22), لهجة وكلام (28), عادات ومناسبات (22), رياضة وأندية (47), البيت والسوق (22), حاجات تعصّب (18), مهن وشغل (24), طبيعة وجو (22), مدرسة وجامعة (50), طفولة وتسعينات (50), قعدة وقهوة (45), شوارع وطرق (35) — مشكّل ≈443
+- [x] Word shape `{t,h,r}` + optional authored decoy `d` for الشبيهة (fallback: random same pack)
 - [x] مشكّل (all packs merged) + فئة خاصة (user-entered, min 3 words)
-- [x] 18 quips (shown during deal/discussion)
-- [x] 18 citizen-win roast lines
-- [x] 18 imposter-win roast lines
-- [x] 10 twist cards with effects
+- [x] ~40 quips (deal/discussion; no-repeat within session)
+- [x] ~30 citizen-win roast lines
+- [x] ~30 imposter-win roast lines
+- [x] 20 twist cards with mechanical effects (half / skipGuess / muteStarter / blackoutX2 / emoji)
+- [x] Intensity preset «قعدة الليلة» (هادية / عادية / مجنونة) → minutes + blackout/twist density + ballot default on مجنونة
+- [x] Secret ballot toggle · rematch streak line on result · rotating deal titles · extra blackout prank lines
 
 ### PWA infrastructure
 - [x] **Local fonts** — Rakkas + Tajawal (4 weights) bundled as woff2, no CDN dependency
@@ -88,13 +91,13 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 - [x] **Fully offline** — works in airplane mode from first load onward
 
 ### Persistence (localStorage)
-- [x] Saves: mode, player count, imposter count, minutes, all 4 toggles, category, player names, avatars
+- [x] Saves: mode, player count, imposter count, minutes, toggles (incl. secret ballot), intensity, category, player names, avatars
 - [x] Rules screen available from home («كيف نلعبوها») — landing always opens on home
 - [x] "نفس القعدة متاع قبل؟" — returning users prompted to reuse last session's names
 - [x] Custom word packs saved and restored
 
 ### Accessibility
-- [x] `role="switch"` + `aria-checked` on all 4 toggle switches
+- [x] `role="switch"` + `aria-checked` on setup toggle switches
 - [x] `aria-label` on stepper +/- buttons (Arabic)
 - [x] `aria-label` on avatar picker buttons
 - [x] `aria-label` on vote tile buttons
@@ -120,19 +123,26 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 - [ ] **Play Store listing** — Arabic-first store copy, screenshots, icon
 
 ### Content gaps
-- [ ] **Regional content sign-off** — blocking for store. Checklist below.
-- [x] **Region tags on words** — each pack entry is `{t, h, r}` with `r` in `tripoli`/`benghazi`/`south`/`all`. v1 UI ignores `r`.
-- [ ] **More quips/roasts** — currently 18 each, which clears the 15+ minimum. More variety = better replay. Each line must be Libyan dialect, funny, relatable.
+- [ ] **Regional content sign-off** — still required before store (cannot be faked). Checklist below.
+- [x] **Region tags on words** — each pack entry is `{t, h, r}` with `r` in `tripoli`/`benghazi`/`south`/`all`.
+- [x] **Region filter UI** — chips on category screen; expands to full pack if filtered pool &lt; 3.
+- [x] **More quips/roasts** — ~40 quips + ~30 roasts each (session no-repeat for quips).
 
-### Regional review checklist (before store)
+### Regional review checklist (before store) — NOT done
 1. Send current packs (or a screenshare of مشكّل rounds) to **one Benghazi** reviewer and **one Fezzan/south** reviewer.
 2. Ask them to mark: wrong for their region, missing must-haves, unsafe/sectarian.
 3. Apply fixes; leave `r` tags accurate; only then clear the sign-off checkbox.
+4. **Human sign-off is blocking for store listing, not for web ship.** Do not invent reviewer approvals.
 
 ### Features deferred to v2+ (from scope §4, §11, §14)
-- [ ] More packs: مدرسة وجامعة, طفولة وتسعينات, أفلام وبرامج
-- [ ] "أكثر أو أقل" second game mode
-- [ ] Share-a-pack via copyable code string
+- [x] Packs: مدرسة وجامعة, طفولة وتسعينات, قعدة وقهوة, شوارع وطرق (+ كرة أعمق داخل رياضة)
+- [x] Modes: أسئلة (as2ila) / فوضى الدخلاء (fawda) — Layer 3
+- [x] قبلي twists ≈20 with mechanical effects (`half`, `skipGuess`, `muteStarter`, `blackoutX2`, `emoji`)
+- [x] إشارة وإيموجي toggle (setup) — first clue pass gestures/emoji only
+- [x] "أكثر ولا أقل" MVP mini-game (from result screen)
+- [x] Share result (Web Share / clipboard) + custom pack share codes (`DK1.` base64)
+- [x] Region filter UI
+- [ ] More packs: أفلام وبرامج, عرس وعزايم
 - [ ] Sound effects (off by default — phone is passed in a quiet room, audio leaks role info)
 - [ ] iOS App Store wrapper
 - [ ] English localization (architect for it, don't build it in v1)
@@ -153,29 +163,28 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 - No build step, no bundler, no framework
 
 ### Key JS globals
-- `PACKS` — object of word packs, keyed by id. Each has `.n` (display name) and `.w` (array of `{t, h, r}` = word, ≤2-word hint, region). `mix` auto-merges all packs. `custom` is user-entered plain strings.
-- `MODES` — array of 4 mode objects: `{id, ic, t, d}` (id, icon emoji, title, description)
-- `QUIPS`, `ROAST_C`, `ROAST_I` — string arrays for flavor text
-- `TWISTS` — array of `{t, half?}` twist card objects (قبلي mode)
-- `state` — single mutable state object for the entire session. Never persisted mid-round.
+- `PACKS` — object of word packs, keyed by id. Each has `.n` (display name) and `.w` (array of `{t, h, r, d?}`). `mix` auto-merges. `custom` is user-entered plain strings.
+- `MODES` — classic, shabiha, qibli, court, **as2ila**, **fawda**
+- `QUIPS`, `ROAST_C`, `ROAST_I`, `DEAL_TITLES`, `BLACKOUT_LINES`, `AKTHAR` — flavor / mini-game
+- `TWISTS` — ~20 قبلي cards; flags: `half`, `skipGuess`, `muteStarter`, `blackoutX2`, `emoji`
+- `REGIONS` / `INTENSITY` — region filter chips; هادية/عادية/مجنونة (manual minutes soft-deselect preset)
+- `state` — session state. Round-only: `roundImposters`, `forceEmoji`, `askIdx`.
 
 ### Key JS functions
-- `go(screenId)` — navigates between screens (hides all, shows target)
-- `deal()` — starts a round: picks unused word/decoy, assigns roles, resets court reopen; informant (if on) learns **one** imposter name (first assigned)
-- `showWord()` / `hideWord()` — open-then-next card display
-- `beginDiscussion()` — starts timer (`discussTotal`), picks starter, shows twist band
-- `buildVote()` — renders vote grid with selection logic
-- `judge()` — evaluates vote correctness; guess screen does not show the word
-- `finish(winner)` — scores, shows result (word + roles)
-- `reVote()` — court reopen once (`courtReopened`)
-- `saveState()` / `loadState()` — localStorage persistence
-- `cutPower()` — blackout prank effect
+- `go(screenId)` — screen navigation
+- `deal()` — word/roles; fawda sets `roundImposters`; region via `filterPool`
+- `setIntensity` / `bump('minutes')` — preset apply; soft-deselect when minutes diverge
+- `beginDiscussion` / `paintAsk` / `advanceAsk` — discuss + as2ila «اسأل الجاي»
+- `buildVote` / `needImps` / `judge` — vote uses actual round imposters; `skipGuess` twist honored
+- `shareResult` / `exportPack` / `importPack` — share + pack codes
+- `startAkthar` / `guessAkthar` — أكثر ولا أقل MVP
+- `finish` / `reVote` / `cutPower` / `saveState` / `loadState`
 
-### Screen IDs (match `id="s-{name}"` in HTML)
-`home` → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result`
+### Screen IDs
+`home` → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v5`. When you change any cached file, **bump the cache name** (e.g., `dakheel-v6`) so the SW picks up changes. The activate handler auto-deletes old caches.
+`sw.js` uses cache name `dakheel-v8`. Bump (e.g. `dakheel-v9`) when cached files change.
 
 ---
 
@@ -203,7 +212,7 @@ Then:
 2. Play a full round — home → mode → setup → category → deal → pass (**افتح**) → reveal (**اللاعب الجاي**) → discuss → vote → guess (no word on screen) → result
 3. Court mode: reopen vote once, confirm second reopen is blocked
 4. Reload the page — settings and names should persist
-5. Check DevTools → Application → Service Workers — should show `sw.js` registered (`dakheel-v5`)
+5. Check DevTools → Application → Service Workers — should show `sw.js` registered (`dakheel-v8`)
 6. Go offline (DevTools → Network → Offline) — the game should still work fully
 
 ---
@@ -240,4 +249,4 @@ npx cap open android  # Opens in Android Studio for build
 
 ## Summary for the next AI session
 
-> You're picking up a Libyan Arabic party game called الدخيل. It's a working PWA in `index.html` (single-file, no framework). The canonical spec is `dakheel-scope.md`. The game logic is complete — all 4 modes, 10 word packs, persistence, offline support. What's left is: deploy to Vercel for the web URL, generate PNG icons, and wrap as TWA/Capacitor for a Play Store APK. Content needs regional review before ship. Read this file and `dakheel-scope.md` before making changes.
+> You're picking up a Libyan Arabic party game called الدخيل. It's a working PWA in `index.html` (single-file, no framework). The canonical spec is `dakheel-scope.md`. The game logic is complete — 4 modes, 14 word packs (~443 in مشكّل), intensity/secret ballot/streak energy, persistence, offline support. Layer 3+ still deferred (أسئلة / فوضى / share card / store). Content needs regional review before ship. Read this file and `dakheel-scope.md` before making changes.
