@@ -4,6 +4,7 @@
   const USER_KEY = 'dakheel-auth-user';
   const QUEUE_KEY = 'dakheel-sync-queue';
   const STATS_KEY = 'dakheel-stats';
+  const PROFILE_KEY = 'dakheel-user-profile';
 
   function emptyStats() {
     return {
@@ -39,12 +40,75 @@
     }
   }
 
+  function getProfile() {
+    return readJson(PROFILE_KEY, null);
+  }
+
+  function isProfileComplete(profileOrSettings) {
+    const p =
+      profileOrSettings && profileOrSettings.profile
+        ? profileOrSettings.profile
+        : profileOrSettings;
+    if (!p || typeof p !== 'object') return false;
+    const name = String(p.displayName || '').trim();
+    return !!(p.completed && name.length >= 2 && p.birthday && p.region);
+  }
+
+  function setLocalUser(user) {
+    if (!user) {
+      try {
+        localStorage.removeItem(USER_KEY);
+      } catch (e) {}
+      return;
+    }
+    const prev = getUser() || {};
+    const displayName =
+      user.displayName != null
+        ? user.displayName
+        : prev.displayName || (getProfile() && getProfile().displayName) || '';
+    writeJson(USER_KEY, {
+      id: user.id || prev.id,
+      email: user.email || prev.email,
+      displayName: displayName || undefined,
+    });
+  }
+
+  function saveLocalProfile(profile) {
+    if (!profile) {
+      try {
+        localStorage.removeItem(PROFILE_KEY);
+      } catch (e) {}
+      return;
+    }
+    writeJson(PROFILE_KEY, profile);
+    const u = getUser();
+    if (u) {
+      setLocalUser({
+        id: u.id,
+        email: u.email,
+        displayName: profile.displayName || u.displayName,
+      });
+    }
+  }
+
   function setSession(token, profile) {
     try {
       if (token) localStorage.setItem(TOKEN_KEY, token);
       else localStorage.removeItem(TOKEN_KEY);
-      if (profile) writeJson(USER_KEY, { id: profile.id, email: profile.email });
-      else localStorage.removeItem(USER_KEY);
+      if (profile) {
+        const p = (profile.settings && profile.settings.profile) || getProfile();
+        setLocalUser({
+          id: profile.id,
+          email: profile.email,
+          displayName: (p && p.displayName) || undefined,
+        });
+        if (profile.settings && profile.settings.profile) {
+          saveLocalProfile(profile.settings.profile);
+        }
+      } else {
+        setLocalUser(null);
+        saveLocalProfile(null);
+      }
     } catch (e) {}
   }
 
@@ -82,6 +146,17 @@
       const merged = mergeStats(loadLocalStats(), profile.stats);
       saveLocalStats(merged);
       if (typeof global.applyCloudStats === 'function') global.applyCloudStats(merged);
+    }
+    if (profile.settings && profile.settings.profile) {
+      saveLocalProfile(profile.settings.profile);
+    }
+    if (profile.id || profile.email) {
+      const p = (profile.settings && profile.settings.profile) || getProfile();
+      setLocalUser({
+        id: profile.id,
+        email: profile.email,
+        displayName: (p && p.displayName) || undefined,
+      });
     }
     if (profile.settings && typeof applySettings === 'function') {
       applySettings(profile.settings);
@@ -153,6 +228,8 @@
   function collectLocalPayload(getSettings) {
     const settings = typeof getSettings === 'function' ? getSettings() : {};
     if (settings && settings.updatedAt == null) settings.updatedAt = Date.now();
+    const localProfile = getProfile();
+    if (localProfile && !settings.profile) settings.profile = localProfile;
     return { stats: loadLocalStats(), settings };
   }
 
@@ -225,6 +302,10 @@
     isSignedIn,
     getUser,
     getToken,
+    getProfile,
+    isProfileComplete,
+    saveLocalProfile,
+    setLocalUser,
     loadLocalStats,
     saveLocalStats,
     mergeStats,

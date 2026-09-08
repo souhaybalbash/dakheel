@@ -292,9 +292,30 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--saffron)
     <p class="tag">كلكم تعرفوا الكلمة… إلا واحد. لقّوه قبل ما يضحك عليكم ويمشي.</p>
   </div>
   <div class="stack">
-    <button class="btn" onclick="go('mode')">إلعب كضيف</button>
+    <button class="btn" id="home-primary-btn" onclick="go('mode')">إلعب كضيف</button>
     <button class="btn ghost" id="auth-open-btn" onclick="openAuthSheet()">دخول / تسجيل</button>
     <button class="btn ghost" onclick="go('rules')">كيف نلعبوها</button>
+  </div>
+</section>
+
+<!-- PROFILE (post-signup) -->
+<section class="screen" id="s-profile">
+  <h2>معلوماتك</h2>
+  <p class="sub">كمّل بياناتك باش نعرفك في القعدة — دقيقة وحدة.</p>
+  <div class="block" style="display:flex;flex-direction:column;gap:12px">
+    <label for="pf-name">الاسم</label>
+    <input id="pf-name" type="text" maxlength="24" autocomplete="nickname" placeholder="اسمك في القعدة">
+    <label for="pf-bday">تاريخ الميلاد</label>
+    <input id="pf-bday" type="date" dir="ltr">
+    <p class="d" style="margin:0">اللعبة مناسبة تقريبًا من 12 سنة وفوق.</p>
+    <div class="d">من وين؟</div>
+    <div class="chips" id="pf-region-chips" role="group" aria-label="المنطقة"></div>
+    <label for="pf-bio">عنك بكلمتين <span style="color:var(--mute)">(اختياري)</span></label>
+    <input id="pf-bio" type="text" maxlength="80" placeholder="مثال: نحب الشاي ثقيل">
+    <div class="auth-err" id="pf-err"></div>
+  </div>
+  <div class="stack" style="margin-top:16px">
+    <button type="button" class="btn" id="pf-save" onclick="saveProfileForm()">حفظ وكمّل</button>
   </div>
 </section>
 
@@ -694,7 +715,7 @@ function needImps(){return state.roundImposters||state.imposters||1;}
 
 /* ===================== PERSISTENCE ===================== */
 function settingsPayload(){
- return {
+ const payload={
   mode:state.mode, players:state.players, imposters:state.imposters,
   minutes:state.minutes, informant:state.informant, blackout:state.blackout,
   showHint:state.showHint, useNames:state.useNames, secretBallot:state.secretBallot,
@@ -702,6 +723,11 @@ function settingsPayload(){
   names:state.names, avs:state.avs, cat:state.cat,
   updatedAt:Date.now()
  };
+ if(window.DakheelAuth){
+  const p=DakheelAuth.getProfile();
+  if(p)payload.profile=p;
+ }
+ return payload;
 }
 function saveState(){
  try{localStorage.setItem('dakheel',JSON.stringify(settingsPayload()))}catch(e){}
@@ -713,6 +739,7 @@ function applyCloudSettings(s){
  if(s.showHint!=null)state.showHint=s.showHint;
  if(s.names&&s.names.length)state.names=s.names;
  if(s.avs&&s.avs.length)state.avs=s.avs;
+ if(s.profile&&window.DakheelAuth) DakheelAuth.saveLocalProfile(s.profile);
  const preset=INTENSITY[state.intensity];
  if(preset){state.blackoutChance=preset.blackoutChance;state.twistChance=preset.twistChance;}
  syncSwitches();paintSetup();paintIntensity();paintRegions();buildModes();
@@ -752,6 +779,7 @@ function go(s){
  if(s==='vote')buildVote();
  if(s==='setup')paintSetup();
  if(s==='cat'){buildCats();paintRegions();}
+ if(s==='profile')paintProfileForm();
  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
  $('s-'+s).classList.add('on');window.scrollTo(0,0);
 }
@@ -1284,14 +1312,113 @@ function resetAll(){
 
 /* ===================== AUTH UI ===================== */
 let authMode='login';
+let pfRegion='all';
+function needsProfile(){
+ if(!window.DakheelAuth||!DakheelAuth.isSignedIn())return false;
+ return !DakheelAuth.isProfileComplete(DakheelAuth.getProfile());
+}
+function routeAfterAuth(fromRegister){
+ paintAuthBar();
+ if(fromRegister||needsProfile()){
+  go('profile');
+  toast(fromRegister?'اتسجّل الحساب — كمّل معلوماتك':'كمّل معلوماتك');
+  return;
+ }
+ go('home');
+ toast('أهلا بيك في القعدة');
+}
 function paintAuthBar(){
- const bar=$('auth-bar'),chip=$('auth-chip'),open=$('auth-open-btn');
+ const bar=$('auth-bar'),chip=$('auth-chip'),open=$('auth-open-btn'),primary=$('home-primary-btn');
  const signed=window.DakheelAuth&&DakheelAuth.isSignedIn();
  if(bar)bar.classList.toggle('on',!!signed);
  if(open)open.style.display=signed?'none':'';
+ if(primary){
+  if(signed){
+   primary.textContent='يلا نبداو';
+   primary.onclick=()=>go('mode');
+  }else{
+   primary.textContent='إلعب كضيف';
+   primary.onclick=()=>go('mode');
+  }
+ }
  if(signed&&chip){
   const u=DakheelAuth.getUser();
-  chip.textContent=u&&u.email?u.email:'مسجّل';
+  const p=DakheelAuth.getProfile();
+  const name=(p&&p.displayName)||(u&&u.displayName)||'';
+  chip.textContent=name||(u&&u.email)||'مسجّل';
+ }
+}
+function paintProfileForm(){
+ const p=window.DakheelAuth&&DakheelAuth.getProfile();
+ if(p){
+  if(p.displayName)$('pf-name').value=p.displayName;
+  if(p.birthday)$('pf-bday').value=p.birthday;
+  if(p.bio!=null)$('pf-bio').value=p.bio;
+  if(p.region)pfRegion=p.region;
+ }else if(!pfRegion)pfRegion='all';
+ const err=$('pf-err');if(err)err.textContent='';
+ paintProfileRegions();
+}
+function paintProfileRegions(){
+ const box=$('pf-region-chips');if(!box)return;
+ box.innerHTML='';
+ REGIONS.forEach(r=>{
+  const el=document.createElement('button');
+  el.type='button';
+  el.className='chip'+(pfRegion===r.id?' sel':'');
+  el.textContent=r.t;
+  el.onclick=()=>{pfRegion=r.id;paintProfileRegions();};
+  box.appendChild(el);
+ });
+}
+function ageFromBirthday(iso){
+ if(!iso)return null;
+ const d=new Date(iso+'T00:00:00');
+ if(isNaN(d.getTime()))return null;
+ const now=new Date();
+ let age=now.getFullYear()-d.getFullYear();
+ const m=now.getMonth()-d.getMonth();
+ if(m<0||(m===0&&now.getDate()<d.getDate()))age--;
+ return age;
+}
+async function saveProfileForm(){
+ const err=$('pf-err');if(err)err.textContent='';
+ if(!window.DakheelAuth||!DakheelAuth.isSignedIn()){go('home');return;}
+ const displayName=($('pf-name').value||'').trim();
+ const birthday=$('pf-bday').value||'';
+ const bio=($('pf-bio').value||'').trim();
+ if(displayName.length<2||displayName.length>24){
+  if(err)err.textContent='الاسم لازم من حرفين لـ 24';
+  return;
+ }
+ if(!birthday){
+  if(err)err.textContent='حط تاريخ ميلادك';
+  return;
+ }
+ if(!pfRegion){
+  if(err)err.textContent='اختار من وين';
+  return;
+ }
+ const age=ageFromBirthday(birthday);
+ if(age!=null&&age<12){
+  toast('اللعبة أنسب من 12 سنة — كمّلنا عادي');
+ }
+ const profile={
+  displayName, birthday, region:pfRegion, bio:bio||'',
+  completed:true, updatedAt:Date.now()
+ };
+ DakheelAuth.saveLocalProfile(profile);
+ if(profile.region&&profile.region!=='all')state.region=profile.region;
+ const btn=$('pf-save');if(btn)btn.disabled=true;
+ try{
+  await DakheelAuth.pushProfile({stats:DakheelAuth.loadLocalStats(),settings:settingsPayload()});
+  paintAuthBar();
+  go('home');
+  toast('تم — يلا للقعدة');
+ }catch(e){
+  if(err)err.textContent=(e&&e.message)||'ما حفظتش — جرّب تاني';
+ }finally{
+  if(btn)btn.disabled=false;
  }
 }
 function openAuthSheet(){
@@ -1319,11 +1446,12 @@ async function submitAuth(){
  const email=($('auth-email').value||'').trim();
  const password=$('auth-pass').value||'';
  const btn=$('auth-submit');if(btn)btn.disabled=true;
+ const wasRegister=authMode==='register';
  try{
-  if(authMode==='register') await DakheelAuth.register(email,password,settingsPayload);
+  if(wasRegister) await DakheelAuth.register(email,password,settingsPayload);
   else await DakheelAuth.login(email,password,settingsPayload,applyCloudSettings);
-  closeAuthSheet();paintAuthBar();
-  toast(authMode==='register'?'اتسجّل الحساب':'أهلا بيك في القعدة');
+  closeAuthSheet();
+  routeAfterAuth(wasRegister);
  }catch(e){
   if(err)err.textContent=(e&&e.message)||'ما قدرناش نكمّل';
  }finally{
@@ -1333,6 +1461,7 @@ async function submitAuth(){
 async function authLogout(){
  if(window.DakheelAuth) await DakheelAuth.logout();
  paintAuthBar();
+ go('home');
  toast('خرجت — تقدر تلعب كضيف');
 }
 
@@ -1340,7 +1469,10 @@ loadState();
 buildModes();paintSetup();paintIntensity();paintRegions();syncSwitches();
 paintAuthBar();
 if(window.DakheelAuth){
- DakheelAuth.refresh(applyCloudSettings).then(()=>paintAuthBar()).catch(()=>{});
+ DakheelAuth.refresh(applyCloudSettings).then(()=>{
+  paintAuthBar();
+  if(needsProfile())go('profile');
+ }).catch(()=>{});
 }
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>

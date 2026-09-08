@@ -38,7 +38,7 @@
 ├── package.json            ← @neondatabase/serverless
 ├── vercel.json             ← API no-store headers; SW no-cache
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (v13; /api never cached)
+├── sw.js                   ← Service worker (v17; shell network-first; /api never cached)
 ├── assets/
 │   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
@@ -51,8 +51,10 @@
 - [x] **Neon Postgres** via Vercel Marketplace (`dakheel-db`) — env: `DATABASE_URL`, `AUTH_SECRET`, plus Neon `POSTGRES_*`
 - [x] Table `profiles` (email, password_hash, stats jsonb, settings jsonb)
 - [x] API: `POST /api/auth/register|login|logout`, `GET|PUT /api/profile` (JWT Bearer ~30d)
-- [x] Home: primary **إلعب كضيف**, secondary **دخول / تسجيل**, signed-in email chip + **خروج**
-- [x] Sync scores/streaks/settings across devices for signed-in users (not custom packs)
+- [x] Home guest: **إلعب كضيف** + **دخول / تسجيل** + **كيف نلعبوها**
+- [x] Home signed-in: **يلا نبداو** + **كيف نلعبوها** (no guest CTA); chip shows displayName + **خروج**
+- [x] Post-signup / incomplete profile screen **معلوماتك** (name, birthday, region, optional bio) → `settings.profile`
+- [x] Sync scores/streaks/settings (+ profile) across devices for signed-in users (not custom packs)
 - [x] Guest path stays fully offline via localStorage; offline sync queue when signed in
 - [x] No Supabase, no Firebase, no Google OAuth in v1
 
@@ -198,10 +200,10 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 - `finish` / `reVote` / `cutPower` / `saveState` / `loadState`
 
 ### Screen IDs
-`home` → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
+`home` → (`profile` after signup) → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v8`. Bump (e.g. `dakheel-v9`) when cached files change.
+`sw.js` uses cache name `dakheel-v17` (network-first for index/auth-sync/manifest). Bump when cached files change.
 
 ---
 
