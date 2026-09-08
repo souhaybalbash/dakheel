@@ -38,7 +38,7 @@
 ├── package.json            ← @neondatabase/serverless
 ├── vercel.json             ← API no-store headers; SW no-cache
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (v9; /api never cached)
+├── sw.js                   ← Service worker (v13; /api never cached)
 ├── assets/
 │   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
@@ -90,14 +90,14 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 
 ### Content (all Libyan dialect)
 - [x] 14 word packs: أكل ليبي (28), مدن ومناطق (30), معالم وأماكن (22), لهجة وكلام (28), عادات ومناسبات (22), رياضة وأندية (47), البيت والسوق (22), حاجات تعصّب (18), مهن وشغل (24), طبيعة وجو (22), مدرسة وجامعة (50), طفولة وتسعينات (50), قعدة وقهوة (45), شوارع وطرق (35) — مشكّل ≈443
-- [x] Word shape `{t,h,r}` + optional authored decoy `d` for الشبيهة (fallback: random same pack)
+- [x] Word shape `{t,h,r}` + authored decoy `d` on **443/443** entries for الشبيهة; 2026-09-08 copy pass elevated food/slang/qaeda + voice; residual pass filled last 7 decoys + كاكاوية + MSA voice polish (`dakheel-v13`)
 - [x] مشكّل (all packs merged) + فئة خاصة (user-entered, min 3 words)
 - [x] ~40 quips (deal/discussion; no-repeat within session)
 - [x] ~30 citizen-win roast lines
 - [x] ~30 imposter-win roast lines
 - [x] 20 twist cards with mechanical effects (half / skipGuess / muteStarter / blackoutX2 / emoji)
 - [x] Intensity preset «قعدة الليلة» (هادية / عادية / مجنونة) → minutes + blackout/twist density + ballot default on مجنونة
-- [x] Secret ballot toggle · rematch streak line on result · rotating deal titles · extra blackout prank lines
+- [x] Secret ballot toggle · rematch streak line on result · rotating deal titles · 5 blackout prank lines
 
 ### PWA infrastructure
 - [x] **Local fonts** — Rakkas + Tajawal (4 weights) bundled as woff2, no CDN dependency
@@ -149,6 +149,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 2. Ask them to mark: wrong for their region, missing must-haves, unsafe/sectarian.
 3. Apply fixes; leave `r` tags accurate; only then clear the sign-off checkbox.
 4. **Human sign-off is blocking for store listing, not for web ship.** Do not invent reviewer approvals.
+5. Still thin for humans to fill later: Fezzan clubs / non-tourist southern landmarks; cartoon nostalgia names (السنتينل / القناص / سلام دانك) generational check.
 
 ### Features deferred to v2+ (from scope §4, §11, §14)
 - [x] Packs: مدرسة وجامعة, طفولة وتسعينات, قعدة وقهوة, شوارع وطرق (+ كرة أعمق داخل رياضة)
