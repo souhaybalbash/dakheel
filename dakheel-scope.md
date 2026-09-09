@@ -1,8 +1,10 @@
 # الدخيل — Build Scope
 
+> **Canonical product:** The live app is the PWA (`index.html` + `sw.js` + `engine.js`). Flutter layout in this document is historical — do not rebuild it. Accounts are **guest-optional**: unsigned play is fully offline; login only syncs scores/settings across phones.
+
 Libyan social-deduction party game. Pass-and-play on one phone, fully offline, Arabic-first (RTL), Libyan dialect and content throughout.
 
-Reference prototype: `dakheel-v2.html` (working single-file HTML). Treat it as the interaction spec, not the codebase. Rebuild properly per this document.
+Reference prototype: `dakheel-v2.html` (working single-file HTML). Treat it as the interaction spec, not the codebase. Production is `index.html`.
 
 ---
 

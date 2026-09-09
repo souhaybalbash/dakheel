@@ -51,7 +51,8 @@
         : profileOrSettings;
     if (!p || typeof p !== 'object') return false;
     const name = String(p.displayName || '').trim();
-    return !!(p.completed && name.length >= 2 && p.birthday && p.region);
+    const region = String(p.region || '').trim();
+    return !!(p.completed && name.length >= 2 && region);
   }
 
   function setLocalUser(user) {
@@ -128,24 +129,11 @@
     writeJson(STATS_KEY, { ...emptyStats(), ...stats });
   }
 
-  function mergeStats(a, b) {
-    const x = { ...emptyStats(), ...(a || {}) };
-    const y = { ...emptyStats(), ...(b || {}) };
-    return {
-      roundsPlayed: Math.max(+x.roundsPlayed || 0, +y.roundsPlayed || 0),
-      citizenWins: Math.max(+x.citizenWins || 0, +y.citizenWins || 0),
-      imposterWins: Math.max(+x.imposterWins || 0, +y.imposterWins || 0),
-      currentStreak: Math.max(+x.currentStreak || 0, +y.currentStreak || 0),
-      bestStreak: Math.max(+x.bestStreak || 0, +y.bestStreak || 0),
-    };
-  }
-
   function applyProfileLocally(profile, applySettings) {
     if (!profile) return;
     if (profile.stats) {
-      const merged = mergeStats(loadLocalStats(), profile.stats);
-      saveLocalStats(merged);
-      if (typeof global.applyCloudStats === 'function') global.applyCloudStats(merged);
+      saveLocalStats(profile.stats);
+      if (typeof global.applyCloudStats === 'function') global.applyCloudStats(profile.stats);
     }
     if (profile.settings && profile.settings.profile) {
       saveLocalProfile(profile.settings.profile);
@@ -209,18 +197,28 @@
     }
   }
 
+  function cloudBody(payload) {
+    const src = payload || {};
+    const body = {};
+    if (src.settings) body.settings = src.settings;
+    if (src.delta && typeof src.delta === 'object') body.delta = src.delta;
+    if (src.resetStreak) body.resetStreak = true;
+    return body;
+  }
+
   async function pushProfile(payload) {
     if (!isSignedIn()) return null;
+    const body = cloudBody(payload);
     if (!navigator.onLine) {
-      queuePush(payload);
+      queuePush(body);
       return null;
     }
     try {
-      const data = await api('/api/profile', { method: 'PUT', body: payload });
+      const data = await api('/api/profile', { method: 'PUT', body });
       if (data && data.profile) applyProfileLocally(data.profile);
       return data;
     } catch (e) {
-      queuePush(payload);
+      queuePush(body);
       return null;
     }
   }
@@ -230,7 +228,7 @@
     if (settings && settings.updatedAt == null) settings.updatedAt = Date.now();
     const localProfile = getProfile();
     if (localProfile && !settings.profile) settings.profile = localProfile;
-    return { stats: loadLocalStats(), settings };
+    return { settings };
   }
 
   async function register(email, password, getSettings) {
@@ -258,7 +256,7 @@
   }
 
   async function refresh(applySettings) {
-    if (!isSignedIn()) return null;
+    if (!getToken()) return null;
     if (!navigator.onLine) return getUser();
     try {
       const data = await api('/api/profile');
@@ -291,6 +289,15 @@
     return s;
   }
 
+  function roundDelta(winner) {
+    return {
+      roundsPlayed: 1,
+      citizenWins: winner === 'citizens' ? 1 : 0,
+      imposterWins: winner === 'imposter' ? 1 : 0,
+      currentStreak: 1,
+    };
+  }
+
   function resetStreakLocal() {
     const s = loadLocalStats();
     s.currentStreak = 0;
@@ -308,7 +315,6 @@
     setLocalUser,
     loadLocalStats,
     saveLocalStats,
-    mergeStats,
     register,
     login,
     logout,
@@ -316,6 +322,7 @@
     pushProfile,
     scheduleSync,
     recordRound,
+    roundDelta,
     resetStreakLocal,
     flushQueue,
     collectLocalPayload,

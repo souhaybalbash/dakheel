@@ -1,9 +1,11 @@
 const { getSql } = require('./_lib/db');
+const { ensureSchema } = require('./_lib/ensure-schema');
 const {
   bearerUser,
-  mergeStats,
   mergeSettings,
   publicProfile,
+  applyStatDelta,
+  sanitizeStats,
 } = require('./_lib/auth');
 const { readJson, send, method } = require('./_lib/http');
 
@@ -14,6 +16,7 @@ module.exports = async function handler(req, res) {
     if (!user) return send(res, 401, { error: 'unauthorized', message: 'لازم تسجّل دخول' });
 
     const sql = getSql();
+    await ensureSchema(sql);
 
     if (req.method === 'GET') {
       const rows = await sql`
@@ -31,7 +34,14 @@ module.exports = async function handler(req, res) {
 
     const row = rows[0];
     const remoteUpdated = row.updated_at ? new Date(row.updated_at).getTime() : 0;
-    const nextStats = body.stats != null ? mergeStats(row.stats, body.stats) : row.stats;
+    let nextStats = sanitizeStats(row.stats);
+    if (body.resetStreak) {
+      nextStats = { ...nextStats, currentStreak: 0 };
+    }
+    if (body.delta && typeof body.delta === 'object') {
+      nextStats = applyStatDelta(nextStats, body.delta);
+    }
+
     const localSettings = body.settings && typeof body.settings === 'object' ? body.settings : null;
     const nextSettings = localSettings
       ? mergeSettings(localSettings, row.settings, Number(localSettings.updatedAt) || Date.now(), remoteUpdated)

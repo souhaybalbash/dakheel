@@ -1,7 +1,8 @@
-const CACHE_NAME = 'dakheel-v20';
+const CACHE_NAME = 'dakheel-v21';
 const PRECACHE_URLS = [
   'index.html',
   'manifest.json',
+  'engine.js',
   'auth-sync.js',
   'assets/icons/icon-192.png',
   'assets/icons/icon-512.png',
@@ -38,7 +39,7 @@ self.addEventListener('activate', event => {
 
 function isShellAsset(url) {
   const p = url.pathname;
-  return p === '/' || p.endsWith('/index.html') || p.endsWith('/auth-sync.js') || p.endsWith('/sw.js') || p.endsWith('/manifest.json');
+  return p === '/' || p.endsWith('/index.html') || p.endsWith('/engine.js') || p.endsWith('/auth-sync.js') || p.endsWith('/sw.js') || p.endsWith('/manifest.json');
 }
 
 self.addEventListener('fetch', event => {

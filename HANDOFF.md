@@ -1,7 +1,7 @@
 # الدخيل — Project Handoff
 
 > Last updated: 2026-09-09
-> Author of this handoff: Claude (Opus 4.6) via Claude Code
+> PWA is canonical. Flutter layout in the old scope is historical. Accounts are guest-optional.
 
 ---
 
@@ -30,15 +30,16 @@
 ```
 الدخيل/
 ├── index.html              ← Production PWA (HTML + CSS + JS)
-├── auth-sync.js            ← Client auth + offline sync queue
+├── engine.js               ← Pure round helpers (shuffle, impCap, caught, blackout, decoy) + engine.test.js
+├── auth-sync.js            ← Client auth + offline sync queue (deltas; skip refresh if no token)
 ├── api/                    ← Vercel serverless (auth + profile)
 │   ├── auth/register.js · login.js · logout.js
 │   ├── profile.js
-│   └── _lib/               ← db, JWT/scrypt, HTTP helpers
-├── package.json            ← @neondatabase/serverless
-├── vercel.json             ← API no-store headers; SW no-cache
+│   └── _lib/               ← db, JWT/async scrypt, HTTP, ensure-schema (lockout columns)
+├── package.json            ← @neondatabase/serverless; `npm test` → node --test engine.test.js
+├── vercel.json             ← nosniff / Referrer-Policy / X-Frame-Options DENY / CSP frame-ancestors 'none'
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (v20; shell network-first; /api never cached)
+├── sw.js                   ← Service worker (v21; shell network-first; engine.js precached; /api never cached)
 ├── assets/
 │   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
@@ -46,7 +47,7 @@
 │       ├── icon-192.png · icon-512.png · icon-512-maskable.png
 │       ├── apple-touch-icon.png     ← 180×180 iOS
 │       └── icon.svg                 ← legacy «د» mark (not linked)
-├── dakheel-scope.md        ← Canonical spec (read-only reference)
+├── dakheel-scope.md        ← Canonical spec (PWA first; Flutter section historical)
 └── dakheel-v2.html         ← Original prototype (read-only reference)
 ```
 
@@ -56,9 +57,12 @@
 - [x] API: `POST /api/auth/register|login|logout`, `GET|PUT /api/profile` (JWT Bearer ~30d)
 - [x] Home guest: **إلعب كضيف** + **دخول / تسجيل** + **كيف نلعبوها**
 - [x] Home signed-in: **يلا نبداو** + **كيف نلعبوها** (no guest CTA); chip shows displayName + **خروج**
-- [x] Post-signup / incomplete profile screen **معلوماتك** (name, birthday, region, optional bio) → `settings.profile`
-- [x] Sync scores/streaks/settings (+ profile) across devices for signed-in users (not custom packs)
-- [x] Guest path stays fully offline via localStorage; offline sync queue when signed in
+- [x] Post-signup / incomplete profile screen **معلوماتك** — name + region required; **birthday optional**; رجوع / كمّل بعدين; home auth chip edits the same form
+- [x] Sync scores/streaks/settings (+ profile) across devices for signed-in users (not custom packs). Stats go as **deltas** (cap +1/field); login does not max-merge client totals
+- [x] Guest path stays fully offline via localStorage; unsigned boot **does not** call `/api/profile`
+- [x] Setup phone UX: primary controls stay visible; seven toggles folded under **خيارات زيادة**; result primary **جولة ثانية** + **شارك النتيجة**, rest under **المزيد**
+- [x] Informant sees **one** imposter name (`informantTarget` = first assigned)
+- [x] Share result uses `modeLabel()` (no crash); in-page dialog instead of `prompt`/`alert`/`confirm`
 - [x] No Supabase, no Firebase, no Google OAuth in v1
 
 ---
@@ -89,7 +93,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 - [x] Imposter guess step (skipped in shabiha mode); word hidden until result
 - [x] Session used-word history (no immediate repeats across rounds)
 - [x] Per-player scoring across rounds
-- [x] Informant role (المخبر) — one citizen sees who the imposter is
+- [x] Informant role (المخبر) — one citizen sees **one** imposter name (first assigned when there are several)
 - [x] Imposter word hint toggle (تلميح للدخيل) — max two words per secret word; replaces category hint
 - [x] Libyan dialect UI pass (منو، تشوف، تفضح، الجاي, Western digits)
 
@@ -140,7 +144,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 ### Deployment (next immediate step)
 - [x] **Deploy to Vercel** — https://dakheel-nu.vercel.app · repo https://github.com/souhaybalbash/dakheel
 - [x] **Raster PNG icons** — masked-hoodie mark: 192, 512, 512 maskable, apple-touch 180; wired in manifest + head
-- [x] **Funny animations + SFX** — CSS FX + procedural Web Audio; setup «أصوات» off by default; no role-unique reveal cues (`dakheel-v20`)
+- [x] **Funny animations + SFX** — CSS FX + procedural Web Audio; setup «أصوات» off by default; no role-unique reveal cues (`dakheel-v21`)
 - [ ] **TWA or Capacitor wrapper** — to produce a signed APK for the Play Store (**next phase**)
 - [ ] **Play Store listing** — Arabic-first store copy, screenshots, icon
 
@@ -207,7 +211,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 `home` → (`profile` after signup) → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v20` (network-first for index/auth-sync/manifest; PNG icons precached). Bump when cached files change.
+`sw.js` uses cache name `dakheel-v21` (network-first for index/engine.js/auth-sync/manifest; PNG icons precached). Bump when cached files change.
 
 ### Motion + SFX (shipped, pre-APK)
 - Animations on shared/tap beats: deal stamp, pass slide, identical open flip, blackout shake/flicker, twist stamp, vote stamp, result pop + saffron confetti-lite; timer pulse last 10s. Honors `prefers-reduced-motion`.
@@ -241,7 +245,7 @@ Then:
 2. Play a full round — home → mode → setup → category → deal → pass (**افتح**) → reveal (**اللاعب الجاي**) → discuss → vote → guess (no word on screen) → result
 3. Court mode: reopen vote once, confirm second reopen is blocked
 4. Reload the page — settings and names should persist
-5. Check DevTools → Application → Service Workers — should show `sw.js` registered (`dakheel-v8`)
+5. Check DevTools → Application → Service Workers — should show `sw.js` registered (`dakheel-v21`)
 6. Go offline (DevTools → Network → Offline) — the game should still work fully
 
 ---
@@ -278,4 +282,4 @@ npx cap open android  # Opens in Android Studio for build
 
 ## Summary for the next AI session
 
-> You're picking up a Libyan Arabic party game called الدخيل. It's a working PWA in `index.html` (single-file, no framework). The canonical spec is `dakheel-scope.md`. The game logic is complete — 4 modes, 14 word packs (~438 in مشكّل), intensity/secret ballot/streak energy, persistence, offline support. Layer 3+ still deferred (أسئلة / فوضى / share card / store). Content needs regional review before ship. Read this file and `dakheel-scope.md` before making changes.
+> You're picking up a Libyan Arabic party game called الدخيل. Production is the PWA in `index.html` (plus `engine.js` / `auth-sync.js`). Flutter in `dakheel-scope.md` is historical. Guest play is fully offline; accounts optional. Regional Benghazi + Fezzan pack review is **still open** and blocks **store**, not web. Do not invent sign-off.

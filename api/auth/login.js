@@ -1,13 +1,16 @@
 const { getSql } = require('../_lib/db');
+const { ensureSchema } = require('../_lib/ensure-schema');
 const {
   verifyPassword,
   normalizeEmail,
   validEmail,
   validPassword,
   signToken,
-  mergeStats,
   mergeSettings,
   publicProfile,
+  isLocked,
+  LOCK_FAILS,
+  LOCK_MS,
 } = require('../_lib/auth');
 const { readJson, send, method } = require('../_lib/http');
 
@@ -22,16 +25,45 @@ module.exports = async function handler(req, res) {
     }
 
     const sql = getSql();
-    const rows = await sql`SELECT id, email, password_hash, stats, settings, updated_at FROM profiles WHERE email = ${email} LIMIT 1`;
-    if (!rows.length || !verifyPassword(password, rows[0].password_hash)) {
+    await ensureSchema(sql);
+
+    const rows = await sql`
+      SELECT id, email, password_hash, stats, settings, updated_at, failed_logins, locked_until
+      FROM profiles WHERE email = ${email} LIMIT 1
+    `;
+    if (!rows.length) {
       return send(res, 401, { error: 'invalid_credentials', message: 'الإيميل أو كلمة السر غلط' });
     }
 
     const row = rows[0];
-    const localStats = body.stats || {};
+    if (isLocked(row)) {
+      return send(res, 429, {
+        error: 'locked',
+        message: 'الحساب مقفول ربع ساعة — جرّب بعدين',
+      });
+    }
+
+    const ok = await verifyPassword(password, row.password_hash);
+    if (!ok) {
+      const lockExpired = row.locked_until && new Date(row.locked_until).getTime() <= Date.now();
+      const fails = (lockExpired ? 0 : Number(row.failed_logins) || 0) + 1;
+      const lockUntil = fails >= LOCK_FAILS ? new Date(Date.now() + LOCK_MS).toISOString() : null;
+      await sql`
+        UPDATE profiles
+        SET failed_logins = ${fails},
+            locked_until = ${lockUntil}
+        WHERE id = ${row.id}
+      `;
+      const msg =
+        fails >= LOCK_FAILS ? 'الحساب مقفول ربع ساعة — جرّب بعدين' : 'الإيميل أو كلمة السر غلط';
+      return send(res, fails >= LOCK_FAILS ? 429 : 401, {
+        error: fails >= LOCK_FAILS ? 'locked' : 'invalid_credentials',
+        message: msg,
+      });
+    }
+
     const localSettings = body.settings && typeof body.settings === 'object' ? body.settings : {};
     const remoteUpdated = row.updated_at ? new Date(row.updated_at).getTime() : 0;
-    const mergedStats = mergeStats(row.stats, localStats);
     const mergedSettings = mergeSettings(
       localSettings,
       row.settings,
@@ -41,8 +73,9 @@ module.exports = async function handler(req, res) {
 
     const updated = await sql`
       UPDATE profiles
-      SET stats = ${JSON.stringify(mergedStats)}::jsonb,
-          settings = ${JSON.stringify(mergedSettings)}::jsonb,
+      SET settings = ${JSON.stringify(mergedSettings)}::jsonb,
+          failed_logins = 0,
+          locked_until = NULL,
           updated_at = now()
       WHERE id = ${row.id}
       RETURNING id, email, stats, settings, updated_at
