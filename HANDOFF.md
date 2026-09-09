@@ -38,7 +38,7 @@
 ├── package.json            ← @neondatabase/serverless
 ├── vercel.json             ← API no-store headers; SW no-cache
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (v17; shell network-first; /api never cached)
+├── sw.js                   ← Service worker (v18; shell network-first; /api never cached)
 ├── assets/
 │   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
@@ -91,8 +91,8 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 - [x] Libyan dialect UI pass (منو، تشوف، تفضح، الجاي, Western digits)
 
 ### Content (all Libyan dialect)
-- [x] 14 word packs: أكل ليبي (28), مدن ومناطق (30), معالم وأماكن (22), لهجة وكلام (28), عادات ومناسبات (22), رياضة وأندية (47), البيت والسوق (22), حاجات تعصّب (18), مهن وشغل (24), طبيعة وجو (22), مدرسة وجامعة (50), طفولة وتسعينات (50), قعدة وقهوة (45), شوارع وطرق (35) — مشكّل ≈443
-- [x] Word shape `{t,h,r}` + authored decoy `d` on **443/443** entries for الشبيهة; 2026-09-08 copy pass elevated food/slang/qaeda + voice; residual pass filled last 7 decoys + كاكاوية + MSA voice polish (`dakheel-v13`)
+- [x] 14 word packs: أكل ليبي (28), مدن ومناطق (30), معالم وأماكن (22), لهجة وكلام (28), عادات ومناسبات (21), رياضة وأندية (47), البيت والسوق (22), حاجات تعصّب (18), مهن وشغل (24), طبيعة وجو (22), مدرسة وجامعة (48), طفولة وتسعينات (49), قعدة وقهوة (44), شوارع وطرق (35) — مشكّل ≈438
+- [x] Word shape `{t,h,r}` + authored decoy `d` on **438/438** entries for الشبيهة; wording-decisions pass (`dakheel-v18`): تربخ/مواطنين/cut طهور·شمين·كانتين·دفتر·غميضة pair→سبيتا; جولاطي؛ شاهي بالكاكاوية؛ تلميح دخاخين
 - [x] مشكّل (all packs merged) + فئة خاصة (user-entered, min 3 words)
 - [x] ~40 quips (deal/discussion; no-repeat within session)
 - [x] ~30 citizen-win roast lines
@@ -203,7 +203,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 `home` → (`profile` after signup) → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v17` (network-first for index/auth-sync/manifest). Bump when cached files change.
+`sw.js` uses cache name `dakheel-v18` (network-first for index/auth-sync/manifest). Bump when cached files change.
 
 ---
 
@@ -268,4 +268,4 @@ npx cap open android  # Opens in Android Studio for build
 
 ## Summary for the next AI session
 
-> You're picking up a Libyan Arabic party game called الدخيل. It's a working PWA in `index.html` (single-file, no framework). The canonical spec is `dakheel-scope.md`. The game logic is complete — 4 modes, 14 word packs (~443 in مشكّل), intensity/secret ballot/streak energy, persistence, offline support. Layer 3+ still deferred (أسئلة / فوضى / share card / store). Content needs regional review before ship. Read this file and `dakheel-scope.md` before making changes.
+> You're picking up a Libyan Arabic party game called الدخيل. It's a working PWA in `index.html` (single-file, no framework). The canonical spec is `dakheel-scope.md`. The game logic is complete — 4 modes, 14 word packs (~438 in مشكّل), intensity/secret ballot/streak energy, persistence, offline support. Layer 3+ still deferred (أسئلة / فوضى / share card / store). Content needs regional review before ship. Read this file and `dakheel-scope.md` before making changes.

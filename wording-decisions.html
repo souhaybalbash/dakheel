@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الدخيل — قرارات الصياغة</title>
+<style>
+  :root {
+    --ink: #12100C;
+    --deep: #1B1811;
+    --surf: #262117;
+    --line: #3A3223;
+    --sand: #F4EBD7;
+    --mute: #A2947A;
+    --saffron: #F2B134;
+    --tea: #C4602A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+    background: var(--ink);
+    color: var(--sand);
+    line-height: 1.55;
+    padding: 20px 16px 80px;
+  }
+  h1 { font-size: 1.6rem; margin: 0 0 8px; color: var(--saffron); }
+  h2 {
+    font-size: 1.15rem;
+    margin: 28px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sub { color: var(--mute); margin: 0 0 16px; max-width: 42rem; }
+  .toolbar {
+    position: sticky; top: 0; z-index: 5;
+    background: rgba(18,16,12,.96);
+    border-bottom: 1px solid var(--line);
+    margin: -20px -16px 20px;
+    padding: 12px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .stats { color: var(--mute); font-size: .9rem; margin-inline-start: auto; }
+  button, .btn {
+    background: var(--saffron); color: var(--ink); border: 0;
+    border-radius: 8px; padding: 8px 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+  }
+  button.ghost {
+    background: transparent; color: var(--sand);
+    border: 1px solid var(--line);
+  }
+  .item {
+    background: var(--deep);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .src { color: var(--saffron); font-size: .85rem; font-weight: 700; }
+  .id { color: var(--mute); font-size: .75rem; float: left; direction: ltr; }
+  .current {
+    background: var(--surf);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    white-space: pre-wrap;
+  }
+  .why, .opts { font-size: .92rem; color: var(--mute); margin: 6px 0; }
+  .opts strong, .why strong { color: var(--sand); font-weight: 600; }
+  label.dec { display: block; margin: 10px 0 4px; font-size: .85rem; }
+  .radios { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 8px; }
+  .radios label { display: flex; gap: 6px; align-items: center; font-size: .9rem; cursor: pointer; }
+  textarea, input[type=text] {
+    width: 100%;
+    background: var(--surf);
+    border: 1px solid var(--line);
+    color: var(--sand);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: .95rem;
+  }
+  textarea { min-height: 64px; resize: vertical; }
+  #export {
+    width: 100%; min-height: 200px; direction: ltr; text-align: left;
+    font-family: ui-monospace, monospace; font-size: .8rem;
+  }
+  .howto {
+    background: var(--surf);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+  .howto ol { margin: 8px 0 0; padding-inline-start: 1.3rem; color: var(--mute); }
+  .howto li { margin-bottom: 4px; }
+  @media print {
+    .toolbar { display: none; }
+    body { background: #fff; color: #111; padding: 12px; }
+    .item { break-inside: avoid; border-color: #ccc; background: #fff; }
+    .current, textarea, input { background: #f7f7f7; color: #111; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button type="button" onclick="save()">حفظ محلي</button>
+  <button type="button" class="ghost" onclick="exportJson()">تصدير JSON</button>
+  <button type="button" class="ghost" onclick="window.print()">طباعة / PDF</button>
+  <button type="button" class="ghost" onclick="if(confirm('مسح كل الإجابات؟'))clearAll()">مسح</button>
+  <span class="stats" id="stats">0 / 0</span>
+</div>
+
+<h1>الدخيل — قرارات الصياغة</h1>
+<p class="sub">نموذج تعبئة لـ Souhayb. فقط البنود اللي تحتاج قرار بشري (~44) — مش كل الكلمات. المصدر: <code>index.html</code>. ما نغيّرش النسخة الحية لين ترجع الإجابات.</p>
+
+<div class="howto">
+  <strong>كيف تعبّي وترجع الجواب</strong>
+  <ol>
+    <li>اختار قرار لكل بند (وكتب البديل في الملاحظات لو «استبدال»).</li>
+    <li>اضغط <b>حفظ محلي</b> — يتسجّل في localStorage على هالجهاز.</li>
+    <li>اضغط <b>تصدير JSON</b> وانسخ النص، والصقه في شات Cursor / للوكيل.</li>
+    <li>أو اطبع PDF من <b>طباعة</b> لو تحب تراجع ورقي.</li>
+    <li>في Cursor في نفس الوقت: كانفاس القرارات (نفس البنود، حالة منفصلة) — عبّي واحد منهم كامل، مش الاثنين نصّ نصّ.</li>
+  </ol>
+</div>
+
+<p>
+  <label class="dec">اسم المراجع</label>
+  <input type="text" id="reviewer" value="Souhayb" oninput="saveQuiet()">
+</p>
+
+<div id="form"></div>
+
+<h2>تصدير JSON</h2>
+<p class="sub">انسخ هذا وأرسله للشات لما تخلّص.</p>
+<textarea id="export" readonly dir="ltr"></textarea>
+
+<script>
+const CAT_META = {
+  safety: { label: "سلامة / قرب الخطر", blurb: "سلاك ناعم، موت/عزاء، دين، قبائل، قوالب." },
+  packs: { label: "فئات — لهجة ونوستالجيا", blurb: "لهجة محلية أو ماركات/كرتون مشكوك." },
+  metaphors: { label: "استعارات / عدالة التلميح", blurb: "أزواج spoil أو مرادفات ظالمة." },
+  voice: { label: "صوت — نكات وتحميص", blurb: "فصحى تتسرب، حلف، خيارات متنافسة." },
+  ui: { label: "واجهة / أطوار / سطور متنافسة", blurb: "ختم، عناوين ورق، أوصاف أطوار…" },
+  auth: { label: "دخول / معلوماتك", blurb: "نصوص الحساب اللي تحسّها مش في محلها." },
+};
+const CAT_ORDER = ["safety","packs","metaphors","voice","ui","auth"];
+const DECISIONS = [
+  { v: "", l: "— بدون قرار —" },
+  { v: "keep", l: "إبقاء كما هو" },
+  { v: "replace", l: "استبدال (اكتب البديل)" },
+  { v: "cut", l: "حذف" },
+  { v: "revise-hint", l: "تعديل التلميح فقط" },
+  { v: "revise-decoy", l: "تعديل الكلمة الشبيهة فقط" },
+  { v: "defer", l: "تأجيل (توقيع شرق/جنوب)" },
+];
+
+const ITEMS = [
+  { id:"s-qibli-name", cat:"safety", source:"MODES · قبلي",
+    current:"قبلي — «نفس اللعبة، بس كل جولة تجيك قاعدة مجنونة…»",
+    why:"الاسم يقرأ قريب من قبيلة؛ السكوب يمنع الإطار القبلي. يتداخل مع ريح «قبلي» وتلميح الشدة «قبلي أهدى».",
+    options:"إبقاء / إعادة تسمية (لفّة مجنونة، قواعد الليلة) / إبقاء + توضيح «قواعد عشوائية»" },
+  { id:"s-taziya", cat:"safety", source:"customs · تعزية",
+    current:"تعزية | عزاء موت | decoy: عزومة",
+    why:"عزاء/موت في لعبة قعدة من ~12 سنة — قرار بشري.",
+    options:"إبقاء / استبدال أخف / حذف" },
+  { id:"s-tahur", cat:"safety", source:"customs · طهور",
+    current:"طهور | حفل ختان | decoy: عرس ليبي",
+    why:"موضوع حسّاس في قعدة مختلطة أو عائلية.",
+    options:"إبقاء / حذف / استبدال (حنة؟ أسبوع؟)" },
+  { id:"s-udhiya", cat:"safety", source:"customs · الأضحية / عيد الأضحى",
+    current:"الأضحية | خروف عيد · عيد الأضحى | ذبح قربان",
+    why:"الدين مسموح ككلمة؛ «ذبح قربان» إطار ذبح — قرّر نبرة التلميح.",
+    options:"إبقاء / تلميح ألطف (خروف العيد) / احذف الأضحية وخلّي العيد" },
+  { id:"s-oath-quips", cat:"safety", source:"QUIPS",
+    current:"«لا تحلف وسط اللعبة…» · «غطّوه بسؤال، مش بقسم»",
+    why:"نكتة حلف/قسم قرب الدين.",
+    options:"إبقاء الاثنين / احذف واحد / أعد الكتابة بلا حلف/قسم" },
+  { id:"s-kayf", cat:"safety", source:"qaeda · الكيف",
+    current:"الكيف | مزاج قعدة | decoy: الضحك",
+    why:"معنى مزدوج: مزاج vs سلاك مخدرات ناعم.",
+    options:"إبقاء (مزاج) / استبدال / حذف" },
+  { id:"s-shuhada", cat:"safety", source:"places · ميدان الشهداء",
+    current:"ميدان الشهداء | ساحة وسط | decoy: السرايا الحمراء",
+    why:"معلم عام (آمن) لكن «شهداء» يقدر يثقل القعدة.",
+    options:"إبقاء / غيّر التلميح / بدّل المعلم" },
+  { id:"s-imam", cat:"safety", source:"work · إمام مسجد",
+    current:"إمام مسجد | صلاة جماعة | decoy: معلّم",
+    why:"دور ديني ككلمة سر — مسموح إذا ما فيش سخرية؛ قرار نبرة للمنتج.",
+    options:"إبقاء / حذف / استبدال" },
+
+  { id:"p-qaamz-worka", cat:"packs", source:"slang · قعمز / وركة",
+    current:"قعمز | اقعد هنا · وركة | امشي خلاص",
+    why:"قد تكون غرب/طرابلس ثقيلة على الشرق والجنوب.",
+    options:"إبقاء / وسم منطقة / استبدال / تأجيل توقيع" },
+  { id:"p-shameen", cat:"packs", source:"qaeda · الشمين",
+    current:"الشمين | شاي مركّز | decoy: شاي أخضر",
+    why:"أكد إنها مفهومة برا ثقافة شاي طرابلس.",
+    options:"إبقاء / تأجيل / استبدال (شاي ثقيل)" },
+  { id:"p-mando", cat:"packs", source:"nostalgia · الماندو",
+    current:"الماندو | مثلج عود | decoy: الآيس كريم",
+    why:"اسم مثلجات محلي؛ الجيل الأصغر أو برّه الغرب قد ما يعرفها.",
+    options:"إبقاء / استبدال / حذف" },
+  { id:"p-kubri", cat:"packs", source:"streets · كوبري",
+    current:"كوبري | جسر عبور | decoy: نفق",
+    why:"قرض مصري؛ الصوت الليبي قد يفضّل جسر.",
+    options:"إبقاء / سمّه جسر / الاثنين" },
+  { id:"p-zarda", cat:"packs", source:"customs · زردة",
+    current:"زردة | وليمة ذكرى | decoy: عزومة",
+    why:"قد تكون غير واضحة أو قريبة من دين حسب المنطقة.",
+    options:"إبقاء / تأجيل / حذف / عدّل التلميح" },
+  { id:"p-sport-south", cat:"packs", source:"sport region tags",
+    current:"south: 0 · tripoli: 3 · benghazi: 6 · all: 38",
+    why:"ما فيش أندية موسومة جنوب — فزان ياخذ الوطني بس.",
+    options:"أضف 2–3 أندية جنوب / خلّيها وطنية / تأجيل" },
+  { id:"p-nafusa-tag", cat:"packs", source:"places · جبل نفوسة",
+    current:"جبل نفوسة | جبال غرب | r: all",
+    why:"واضح غرب لكن موسوم all — يضعف صدق فلتر المنطقة.",
+    options:"وسم tripoli / إبقاء all / تأجيل" },
+  { id:"p-brands", cat:"packs", source:"nostalgia brands",
+    current:"نينتندو · بلاي ستيشن · سوبر ماريو · تاماغوتشي · نوكيا",
+    why:"أسماء علامات تجارية — عادة تمام في ألعاب حفلات؛ سياسة المتجر + العمر يختلفوا.",
+    options:"إبقاء المجموعة / احذف الماركات / خلّي نوكيا بس" },
+  { id:"p-cartoons", cat:"packs", source:"nostalgia cartoons",
+    current:"السنتينل · القناص · كابتن ماجد · سلام دانك",
+    why:"أكد أسماء البث العربي؛ «القناص» تقرأ قنص vs كرتون. عمر 12 قد ما يعرف تسعينات.",
+    options:"إبقاء / صحّح العناوين / احذف القناص / احذف صف الكرتون" },
+
+  { id:"m-asida", cat:"metaphors", source:"food",
+    current:"عصيدة ↔ عصيدة بالرب (decoys متبادلة؛ جذر مشترك)",
+    why:"في الشبيهة تقريبًا يفضح السر.",
+    options:"غيّر decoy / ادمج كلمة / إبقاء" },
+  { id:"m-akhdar", cat:"metaphors", source:"sport",
+    current:"الأخضر hint «منتخب لقب» ↔ منتخب ليبيا",
+    why:"زوج شبه مترادف — تلميح «منتخب» يطيح الاتنين.",
+    options:"decoy مختلف / احذف واحد / عدّل التلميحات" },
+  { id:"m-redcard", cat:"metaphors", source:"sport · الطرد",
+    current:"الطرد | بطاقة حمراء | decoy: البطاقة الحمراء",
+    why:"التلميح يسمّي كلمة الـdecoy حرفيًا — spoil.",
+    options:"عدّل التلميح / غيّر decoy / احذف الطرد" },
+  { id:"m-canteen", cat:"metaphors", source:"school",
+    current:"الكانتين ↔ المقصف",
+    why:"مصيدة مرادفات لنفس التلميح.",
+    options:"احذف واحد / decoys مختلفة / إبقاء" },
+  { id:"m-daftar", cat:"metaphors", source:"school",
+    current:"الدفتر ↔ الكراسة (تلميحات تتبادل الأسماء)",
+    why:"نفس مشكلة المرادف.",
+    options:"احذف واحد / فرّق التلميحات / إبقاء" },
+  { id:"m-last-tea", cat:"metaphors", source:"qaeda",
+    current:"الثالثة باللوز و آخر كاس — نفس التلميح «شاي ختام»",
+    why:"كلمتين سر بنفس سطح التلميح — ظالم في المشكّل.",
+    options:"فرّق التلميحات / احذف واحد / ادمج" },
+  { id:"m-foul-tea", cat:"metaphors", source:"food · شاي بالفول",
+    current:"hint: كاكاوية شاي — وكاكاوية كلمة في فئة ثانية",
+    why:"التلميح يعلّم كلمة سر أخرى في المشكّل.",
+    options:"عدّل التلميح (فول في الشاي) / فك الربط / إبقاء" },
+  { id:"m-hide", cat:"metaphors", source:"nostalgia",
+    current:"الغميضة ↔ الاستغماية",
+    why:"اسمين إقليميين لنفس اللعبة.",
+    options:"خلّي اسم واحد / decoys مختلفة / إبقاء الاثنين كميزة" },
+
+  { id:"v-ghaliban", cat:"voice", source:"QUIPS #31",
+    current:"لو الكل اتفق بسرعة، غالبًا الاتفاق غالط.",
+    why:"«غالبًا» فصحى وسط بنك ليبي.",
+    options:"إبقاء / استبدال (غالب الاتفاق غالط)" },
+  { id:"v-musalsalat", cat:"voice", source:"QUIPS #36",
+    current:"جاوبوا قصير؛ الشرح للمسلسلات.",
+    why:"نكته عربية عامة — هل تطابق صوت القعدة؟",
+    options:"إبقاء / استبدال / حذف" },
+  { id:"v-akhlaq", cat:"voice", source:"QUIPS #40",
+    current:"قعدة الليلة مش درس أخلاق؛ هي صيد دخيل.",
+    why:"«درس أخلاق» نبرة مدرسة/فصحى — تلميع اختياري.",
+    options:"إبقاء / لبْنِن / حذف" },
+  { id:"v-ahali", cat:"voice", source:"ROAST + أدوار النتيجة",
+    current:"المواطنون = الأهالي / أهلي",
+    why:"اختيار مفردات المنتج.",
+    options:"إبقاء الأهالي / بدّل المصطلح / اخلط عمدًا" },
+  { id:"v-hollywoodwood", cat:"voice", source:"ROAST_C #6",
+    current:"تمثيل هوليودي؟ لأ، تمثيل مدرسي.",
+    why:"مرجع هوليوود — مضحك أو برّه وعد «ليبي بس».",
+    options:"إبقاء / استبدال / حذف" },
+  { id:"v-deal-titles", cat:"voice", source:"DEAL_TITLES",
+    current:"نخلطوا الأوراق · ورّقوا يا جماعة · صبّوا الشاي وورّقوا · خلّطوا وما تشوفوش · العالة تبدى · ياخذ كل واحد ورقته",
+    why:"سطور توزيع متنافسة؛ «العالة تبدى» أقوى صوت شاي.",
+    options:"خلّي الـ6 تدور / احذف الضعيف / العالة بس" },
+
+  { id:"u-stamp", cat:"ui", source:"home · stamp",
+    current:"هاتف واحد · قعدة وحدة · كذّاب واحد",
+    why:"يتنافس مع التاجلاين؛ كذّاب vs دخيل لاتساق العلامة.",
+    options:"إبقاء / كذّاب→دخيل / قصّر / أعد الكتابة" },
+  { id:"u-tagline", cat:"ui", source:"home · tag",
+    current:"كلكم تعرفوا الكلمة… إلا واحد. لقّوه قبل ما يضحك عليكم ويمشي.",
+    why:"سطر السكوب القصير vs جملة تسويق أطول.",
+    options:"إبقاء الكامل / الجملة الأولى بس / أعد" },
+  { id:"u-mode-classic", cat:"ui", source:"MODES · classic",
+    current:"الدخيل يعرف روحه، وما عندهش كلمة. سهل تتعلّمه، صعب تفوز فيه.",
+    why:"طول/طاقة الوصف vs «أخبث طور» للشبيهة — وحّد النمط؟",
+    options:"إبقاء / وحّد الطول / كلاسيكي أحدّ" },
+  { id:"u-mode-fawda", cat:"ui", source:"MODES · فوضى الدخلاء",
+    current:"عدد الدخلاء عشوائي وما حد يعرف قدّاش…",
+    why:"«فوضى» قد تبان عطل مش طور.",
+    options:"إبقاء / إعادة تسمية / وضّح الوصف" },
+  { id:"u-intensity-qibli", cat:"ui", source:"INTENSITY · هادية",
+    current:"هادية — 5 دقايق، مقلب أقل، قبلي أهدى.",
+    why:"يخلط شدة القعدة مع اسم طور قبلي.",
+    options:"«القواعد العشوائية أهدى» / إبقاء / احذف جملة القبلي" },
+  { id:"u-blackout-guest", cat:"ui", source:"BLACKOUT · جا الضيف",
+    current:"جا الضيف — اسكتوا ثانية… تظاهروا إنكم محترمين",
+    why:"مضحك vs إحراج القعدة.",
+    options:"إبقاء / لطّف السطر / احذف هالمقلب" },
+  { id:"u-cat-sub", cat:"ui", source:"شاشة الفئة",
+    current:"كلها من عندنا — من البازين للمولّد.",
+    why:"لطيف لكن ناقص (14 فئة الآن).",
+    options:"إبقاء / حدّث / أعد" },
+  { id:"u-citizens-word", cat:"ui", source:"قوانين + نتيجة",
+    current:"الأهالي ربحوا / دور أهلي",
+    why:"نفس قرار مصطلح الصوت لاتساق الواجهة.",
+    options:"إبقاء / حاذي قرار التحميص / مصطلح UI مختلف" },
+
+  { id:"a-email-label", cat:"auth", source:"ورقة الدخول",
+    current:"الإيميل · placeholder: you@email.com",
+    why:"كلمة دخيلة + إنجليزي على منتج عربي أول.",
+    options:"إبقاء / البريد + مثال عربي / مختلط تمام" },
+  { id:"a-password", cat:"auth", source:"ورقة الدخول",
+    current:"كلمة السر · 6 حروف على الأقل",
+    why:"كلمة السر vs المرور vs الباسورد.",
+    options:"كلمة السر / كلمة المرور / الباسورد" },
+  { id:"a-sakker", cat:"auth", source:"زر الإغلاق",
+    current:"سكّر",
+    why:"لهجة تمام؛ البعض يتوقع إلغاء / رجوع.",
+    options:"إبقاء / إلغاء / سكّرها" },
+  { id:"a-auth-sub", cat:"auth", source:"وصف الدخول",
+    current:"سجّل باش تنقل نقاطك وسلسلة فوزك بين التليفونات…",
+    why:"أكد إن «سلسلة فوزك» هي اللي تهم المستخدم.",
+    options:"إبقاء / قصّر / أكّد الضيف بلا نت أكثر" },
+  { id:"a-profile", cat:"auth", source:"معلوماتك",
+    current:"من وين؟ · ميلاد مطلوب · مناسب من 12 سنة",
+    why:"يحسّ بحساب ثقيل للعبة قعدة — قرّر الحقول الإلزامية.",
+    options:"الكل مطلوب / المنطقة اختيارية / الميلاد اختياري بعد تأكيد العمر" },
+];
+
+const LS_KEY = "dakheel-wording-decisions-v1";
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+  catch { return {}; }
+}
+function getState() {
+  const s = load();
+  if (!s.answers) s.answers = {};
+  if (!s.reviewer) s.reviewer = "Souhayb";
+  return s;
+}
+function persist(s) {
+  localStorage.setItem(LS_KEY, JSON.stringify(s));
+  updateStats();
+  renderExport();
+}
+function saveQuiet() {
+  const s = getState();
+  s.reviewer = document.getElementById("reviewer").value || "Souhayb";
+  document.querySelectorAll(".item").forEach((el) => {
+    const id = el.dataset.id;
+    const decision = (el.querySelector('input[type=radio]:checked') || {}).value || "";
+    const note = (el.querySelector("textarea") || {}).value || "";
+    s.answers[id] = { decision, note };
+  });
+  persist(s);
+}
+function save() {
+  saveQuiet();
+  toast("اتحفظ محليًا");
+}
+function clearAll() {
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+function toast(msg) {
+  const t = document.createElement("div");
+  t.textContent = msg;
+  t.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--saffron);color:var(--ink);padding:10px 16px;border-radius:8px;font-weight:700;z-index:9";
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1600);
+}
+function updateStats() {
+  const s = getState();
+  const decided = ITEMS.filter((i) => s.answers[i.id]?.decision).length;
+  document.getElementById("stats").textContent = decided + " / " + ITEMS.length + " قرار";
+}
+function buildExport() {
+  const s = getState();
+  const decided = ITEMS.filter((i) => s.answers[i.id]?.decision).length;
+  return {
+    reviewer: s.reviewer || "Souhayb",
+    source: "wording-decisions.html",
+    totals: {
+      items: ITEMS.length,
+      decided,
+      keep: ITEMS.filter((i) => s.answers[i.id]?.decision === "keep").length,
+      cut: ITEMS.filter((i) => s.answers[i.id]?.decision === "cut").length,
+      replaceOrRevise: ITEMS.filter((i) =>
+        ["replace","revise-hint","revise-decoy"].includes(s.answers[i.id]?.decision)
+      ).length,
+    },
+    byCategory: Object.fromEntries(CAT_ORDER.map((c) => [c, {
+      total: ITEMS.filter((i) => i.cat === c).length,
+      decided: ITEMS.filter((i) => i.cat === c && s.answers[i.id]?.decision).length,
+    }])),
+    decisions: ITEMS.map((i) => ({
+      id: i.id,
+      cat: i.cat,
+      source: i.source,
+      current: i.current,
+      decision: s.answers[i.id]?.decision || "",
+      note: s.answers[i.id]?.note || "",
+    })),
+  };
+}
+function renderExport() {
+  document.getElementById("export").value = JSON.stringify(buildExport(), null, 2);
+}
+function exportJson() {
+  saveQuiet();
+  renderExport();
+  const ta = document.getElementById("export");
+  ta.focus();
+  ta.select();
+  try {
+    navigator.clipboard.writeText(ta.value);
+    toast("JSON منسوخ — الصقه في الشات");
+  } catch {
+    toast("حدّد النص وانسخه يدوي");
+  }
+}
+function render() {
+  const s = getState();
+  document.getElementById("reviewer").value = s.reviewer || "Souhayb";
+  const root = document.getElementById("form");
+  root.innerHTML = "";
+  CAT_ORDER.forEach((cat) => {
+    const items = ITEMS.filter((i) => i.cat === cat);
+    const h = document.createElement("h2");
+    h.textContent = CAT_META[cat].label + " (" + items.length + ")";
+    root.appendChild(h);
+    const blurb = document.createElement("p");
+    blurb.className = "sub";
+    blurb.textContent = CAT_META[cat].blurb;
+    root.appendChild(blurb);
+    items.forEach((item) => {
+      const ans = s.answers[item.id] || { decision: "", note: "" };
+      const el = document.createElement("div");
+      el.className = "item";
+      el.dataset.id = item.id;
+      el.innerHTML =
+        '<span class="id">' + item.id + "</span>" +
+        '<div class="src">' + escapeHtml(item.source) + "</div>" +
+        '<div class="current">' + escapeHtml(item.current) + "</div>" +
+        '<p class="why"><strong>ليش قرار:</strong> ' + escapeHtml(item.why) + "</p>" +
+        '<p class="opts"><strong>خيارات مقترحة:</strong> ' + escapeHtml(item.options) + "</p>" +
+        '<label class="dec">قرارك</label>' +
+        '<div class="radios">' +
+        DECISIONS.map((d) =>
+          '<label><input type="radio" name="d-' + item.id + '" value="' + d.v + '"' +
+          (ans.decision === d.v ? " checked" : "") + "> " + d.l + "</label>"
+        ).join("") +
+        "</div>" +
+        '<label class="dec">ملاحظات / نص بديل</label>' +
+        '<textarea placeholder="اكتب البديل أو ملاحظة لتوقيع الشرق/الجنوب…">' +
+        escapeHtml(ans.note || "") + "</textarea>";
+      el.querySelectorAll("input,textarea").forEach((n) =>
+        n.addEventListener("change", saveQuiet)
+      );
+      el.querySelector("textarea").addEventListener("input", saveQuiet);
+      root.appendChild(el);
+    });
+  });
+  updateStats();
+  renderExport();
+}
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+render();
+</script>
+</body>
+</html>
