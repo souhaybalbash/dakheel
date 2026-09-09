@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dakheel-v19';
+const CACHE_NAME = 'dakheel-v20';
 const PRECACHE_URLS = [
   'index.html',
   'manifest.json',

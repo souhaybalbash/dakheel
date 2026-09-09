@@ -1,6 +1,6 @@
 # الدخيل — Project Handoff
 
-> Last updated: 2026-09-08
+> Last updated: 2026-09-09
 > Author of this handoff: Claude (Opus 4.6) via Claude Code
 
 ---
@@ -38,7 +38,7 @@
 ├── package.json            ← @neondatabase/serverless
 ├── vercel.json             ← API no-store headers; SW no-cache
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (v19; shell network-first; /api never cached)
+├── sw.js                   ← Service worker (v20; shell network-first; /api never cached)
 ├── assets/
 │   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
@@ -139,8 +139,9 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 
 ### Deployment (next immediate step)
 - [x] **Deploy to Vercel** — https://dakheel-nu.vercel.app · repo https://github.com/souhaybalbash/dakheel
-- [x] **Raster PNG icons** — masked-hoodie mark: 192, 512, 512 maskable, apple-touch 180; wired in manifest + head (`dakheel-v19`)
-- [ ] **TWA or Capacitor wrapper** — to produce a signed APK for the Play Store
+- [x] **Raster PNG icons** — masked-hoodie mark: 192, 512, 512 maskable, apple-touch 180; wired in manifest + head
+- [x] **Funny animations + SFX** — CSS FX + procedural Web Audio; setup «أصوات» off by default; no role-unique reveal cues (`dakheel-v20`)
+- [ ] **TWA or Capacitor wrapper** — to produce a signed APK for the Play Store (**next phase**)
 - [ ] **Play Store listing** — Arabic-first store copy, screenshots, icon
 
 ### Content gaps
@@ -165,7 +166,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 - [x] Share result (Web Share / clipboard) + custom pack share codes (`DK1.` base64)
 - [x] Region filter UI
 - [ ] More packs: أفلام وبرامج, عرس وعزايم
-- [ ] Sound effects (off by default — phone is passed in a quiet room, audio leaks role info)
+- [x] Sound effects (off by default; shared-room beats only — never different SFX on private reveal)
 - [ ] iOS App Store wrapper
 - [ ] English localization (architect for it, don't build it in v1)
 
@@ -206,7 +207,13 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 `home` → (`profile` after signup) → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v19` (network-first for index/auth-sync/manifest; PNG icons precached). Bump when cached files change.
+`sw.js` uses cache name `dakheel-v20` (network-first for index/auth-sync/manifest; PNG icons precached). Bump when cached files change.
+
+### Motion + SFX (shipped, pre-APK)
+- Animations on shared/tap beats: deal stamp, pass slide, identical open flip, blackout shake/flicker, twist stamp, vote stamp, result pop + saffron confetti-lite; timer pulse last 10s. Honors `prefers-reduced-motion`.
+- Setup toggle **أصوات** (`state.sfx`, default **off**, persisted). `playSfx(...)` is procedural Web Audio — no MP3 pack.
+- **Hard rule:** reveal card uses the same open cue for citizen and دخيل (no role leak).
+- **Next:** Capacitor or TWA APK wrap (icons ready).
 
 ---
 
