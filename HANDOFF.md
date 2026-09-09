@@ -38,11 +38,14 @@
 ├── package.json            ← @neondatabase/serverless
 ├── vercel.json             ← API no-store headers; SW no-cache
 ├── manifest.json           ← PWA web app manifest
-├── sw.js                   ← Service worker (v18; shell network-first; /api never cached)
+├── sw.js                   ← Service worker (v19; shell network-first; /api never cached)
 ├── assets/
 │   ├── fonts/              ← 11 woff2 files (Rakkas + Tajawal)
 │   └── icons/
-│       └── icon.svg
+│       ├── icon-source.png          ← master (masked hoodie)
+│       ├── icon-192.png · icon-512.png · icon-512-maskable.png
+│       ├── apple-touch-icon.png     ← 180×180 iOS
+│       └── icon.svg                 ← legacy «د» mark (not linked)
 ├── dakheel-scope.md        ← Canonical spec (read-only reference)
 └── dakheel-v2.html         ← Original prototype (read-only reference)
 ```
@@ -104,8 +107,8 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 ### PWA infrastructure
 - [x] **Local fonts** — Rakkas + Tajawal (4 weights) bundled as woff2, no CDN dependency
 - [x] **Service Worker** (`sw.js`) — precaches all 15 assets, cache-first strategy, old cache cleanup
-- [x] **Web App Manifest** — standalone, portrait, RTL, dark theme, SVG icon
-- [x] **PWA meta tags** — theme-color, apple-mobile-web-app-capable, apple-touch-icon
+- [x] **Web App Manifest** — standalone, portrait, RTL, dark theme; PNG icons 192/512 + maskable
+- [x] **PWA meta tags** — theme-color, apple-mobile-web-app-capable, apple-touch-icon (180 PNG)
 - [x] **Fully offline** — works in airplane mode from first load onward
 
 ### Persistence (localStorage)
@@ -136,7 +139,7 @@ The scope document (`dakheel-scope.md`) originally specified **Flutter** for And
 
 ### Deployment (next immediate step)
 - [x] **Deploy to Vercel** — https://dakheel-nu.vercel.app · repo https://github.com/souhaybalbash/dakheel
-- [ ] **Generate raster PNG icons** — 192x192 and 512x512 from the SVG, add to manifest for wider Android compatibility
+- [x] **Raster PNG icons** — masked-hoodie mark: 192, 512, 512 maskable, apple-touch 180; wired in manifest + head (`dakheel-v19`)
 - [ ] **TWA or Capacitor wrapper** — to produce a signed APK for the Play Store
 - [ ] **Play Store listing** — Arabic-first store copy, screenshots, icon
 
@@ -203,7 +206,7 @@ Everything lives in `index.html` — HTML structure, CSS (in `<style>`), and Jav
 `home` → (`profile` after signup) → `rules` → `mode` → `setup` → `names` → `cat` → `deal` → `pass` ⇄ `reveal` → `twist` → `discuss` → `vote` → `court` → `guess` → `result` → (`akthar` ⇄ `ak-reveal`)
 
 ### Service Worker
-`sw.js` uses cache name `dakheel-v18` (network-first for index/auth-sync/manifest). Bump when cached files change.
+`sw.js` uses cache name `dakheel-v19` (network-first for index/auth-sync/manifest; PNG icons precached). Bump when cached files change.
 
 ---
 

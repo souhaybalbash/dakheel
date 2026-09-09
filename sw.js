@@ -1,9 +1,12 @@
-const CACHE_NAME = 'dakheel-v18';
+const CACHE_NAME = 'dakheel-v19';
 const PRECACHE_URLS = [
   'index.html',
   'manifest.json',
   'auth-sync.js',
-  'assets/icons/icon.svg',
+  'assets/icons/icon-192.png',
+  'assets/icons/icon-512.png',
+  'assets/icons/icon-512-maskable.png',
+  'assets/icons/apple-touch-icon.png',
   'assets/fonts/Qw3cZQlNHiblL3jPlNFOG-AMCmR8.woff2',
   'assets/fonts/Qw3cZQlNHiblL3jPn9FOG-AMCmR8.woff2',
   'assets/fonts/Qw3cZQlNHiblL3jPkdFOG-AMCg.woff2',
